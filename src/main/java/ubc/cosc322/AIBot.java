@@ -1,8 +1,8 @@
 
-package ubc.cosc322.players;
+package ubc.cosc322;
 
 import java.util.ArrayList;
-
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -18,111 +18,124 @@ import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
  */
 public class AIBot extends GamePlayer{
 
-    private GameClient gameClient = null; 
-    private final GameStateManager RosieManager;
-    private BaseGameGUI gamegui = null;
-    private String username = null;
-    private String password = null;
 	private final Logger logger;
+
+    private GameClient gameClient = null; 
+    private BaseGameGUI gameGui = null;
+	private final GameStateManager RosieManager;
+
+    private String userName = null;
+    private String passwd = null;
  
 	
     /**
      * The main method
      * @param args for name and passwd (current, any string would work)
      */
-    public static void main(String[] args) {
-        AIBot rosie = new AIBot(args[0], args[1]);
-        if (rosie.getGameGUI() == null) {
-            rosie.Go();
-        } else {
-            BaseGameGUI.sys_setup();
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    rosie.Go();
-                }
-            });
-        }
+    public static void main(String[] args) {				 
+    	AIBot bot = new AIBot(args[0], args[1]);
+    	
+    	if(bot.getGameGUI() == null) {
+    		bot.Go();
+    	}
+    	else {
+    		BaseGameGUI.sys_setup();
+            java.awt.EventQueue.invokeLater(bot::Go);
+    	}
     }
-
 	
     /**
      * Any name and passwd 
      * @param userName
       * @param passwd
      */
-    public AIBot(String username, String password) {
-    	this.username = username;
-    	this.password = password;
-    	logger = Logger.getLogger(GameStateManager.class.toString());
-    	this.RosieManager = new GameStateManager();
-    	if (System.console() == null) {
-            this.gamegui = null;
-        } else {
-            this.gamegui = new BaseGameGUI(this);
-        }
+    public AIBot(String userName, String passwd) {
+
+		logger = Logger.getLogger(GameStateManager.class.toString());
+
+		this.userName = userName;
+    	this.passwd = passwd;
+    	
+    	//To make a GUI-based player, create an instance of BaseGameGUI
+    	//and implement the method getGameGUI() accordingly
+    	this.gameGui = new BaseGameGUI(this);
+
+		//Initialize GameStateManager
+		this.RosieManager = new GameStateManager();
     }
  
 
 
     @Override
     public void onLogin() {
-    	System.out.println("Congratualations!!! "
-    			+ "I am called because the server indicated that the login is successfully");
-    	System.out.println("The next step is to find a room and join it: "
-    			+ "the gameClient instance created in my constructor knows how!"); 
+		logger.info("Login Successful.");
 
-    	username = gameClient.getUserName();
-    	if(gamegui != null) {
-    	gamegui.setRoomInformation(gameClient.getRoomList());
-    	}
+		userName = getGameClient().getUserName();
+		if(gameGui != null){
+			gameGui.setRoomInformation(gameClient.getRoomList());
+		}
     }
 
-
-    
-    private void moveRosie(){
-		Map<String, Object> move = RosieManager.makeMove();
-
-		if(!move.isEmpty()){
-			gamegui.updateGameState(move);
-			gameClient.sendMoveMessage(move);
-
-			logger.info("we made our move. Waiting for the opponent now!");
-
-		}else {
-			logger.severe("No more move found. We lost :(");
-		}
-	}
-    
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
-    	if (messageType == GameMessage.GAME_STATE_BOARD) {
-    	    gamegui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
-    	} else if (messageType == GameMessage.GAME_ACTION_MOVE) {
-    	    gamegui.updateGameState(msgDetails);
-    	    RosieManager.opponentMove(msgDetails);
-    	    moveRosie();
-    	} else if (messageType == GameMessage.GAME_ACTION_START) {
-    	    String black = (String) msgDetails.get(AmazonsGameMessage.PLAYER_BLACK);
-    	    if (black.equalsIgnoreCase(username)) {
-    	        logger.info("Playing as black.");
-    	        RosieManager.setPlayer(GameStateManager.Tile.BLACK);
-    	        moveRosie();
-    	    } else {
-    	        logger.info("Playing as white.");
-    	        RosieManager.setPlayer(GameStateManager.Tile.WHITE);
-    	    }
-    	} else {
-    	    String msg = "Unhandled Message Type occurred: " + messageType;
-    	    logger.warning(msg);
-    	}
-	return true;
+		switch (messageType) {
+			case GameMessage.GAME_STATE_BOARD -> gameGui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+			case GameMessage.GAME_ACTION_MOVE ->  {
+				//Update our GUI to reflect opponents move
+				gameGui.updateGameState(msgDetails);
+
+				//Update GameStateManager board state
+				RosieManager.opponentPlayerMove(msgDetails);
+
+				//Make our move
+				move();
+
+			}
+			case GameMessage.GAME_ACTION_START -> {
+
+				//Make a move if the bot starts as white
+				String black = (String) msgDetails.get(AmazonsGameMessage.PLAYER_BLACK);
+				if(black.equalsIgnoreCase(userName)){
+
+					logger.info("Playing as black.");
+					RosieManager.setPlayers(GameStateManager.Square.BLACK);
+
+					//Make our move
+					move();
+
+
+				} else {
+					logger.info("Playing as white.");
+					RosieManager.setPlayers(GameStateManager.Square.WHITE);
+				}
+			}
+			default -> {
+				String msg = "Unhandled Message Type occurred: " + messageType;
+				logger.warning(msg);
+			}
+		}
+
+    	return true;
     }
     
+    private void move(){
+		Map<String, Object> moveDetails = RosieManager.findOurBestMove();
+
+		if(!moveDetails.isEmpty()){
+			gameGui.updateGameState(moveDetails);
+			gameClient.sendMoveMessage(moveDetails);
+
+			logger.info("Made our move. Waiting on opponent.");
+
+		}else {
+			logger.severe("No move found. We've lost.");
+		}
+	}
 
 
     @Override
     public String userName() {
-    	return username;
+    	return userName;
     }
 
 	@Override
@@ -132,12 +145,12 @@ public class AIBot extends GamePlayer{
 
 	@Override
 	public BaseGameGUI getGameGUI() {
-		return gamegui;
+		return gameGui;
 	}
 
 	@Override
 	public void connect() {
-    	gameClient = new GameClient(username, password, this);			
+    	gameClient = new GameClient(userName, passwd, this);			
 	}
 
  

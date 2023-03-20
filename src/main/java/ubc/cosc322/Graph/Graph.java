@@ -1,7 +1,7 @@
-package ubc.cosc322.movement;
+package ubc.cosc322.Graph;
 
 import ubc.cosc322.GameStateManager;
-import ubc.cosc322.movement.heuristics.Distance;
+import ubc.cosc322.Algorithm.Distance;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,9 +65,9 @@ public class Graph {
         if(!player.isPlayer()) return;
 
 
-        Node currNode = nodes.get(move.currentIndex());
-        Node arrowNode = nodes.get(move.arrowIndex());
-        Node nextNode = nodes.get(move.nextIndex());
+        Node currNode = nodes.get(move.current_Index());
+        Node arrowNode = nodes.get(move.arrow_Index());
+        Node nextNode = nodes.get(move.next_Index());
 
         //Set current to empty
         currNode.setValue(GameStateManager.Square.EMPTY);

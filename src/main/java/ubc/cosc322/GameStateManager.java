@@ -1,8 +1,8 @@
-package main.java.ubc.cosc322;
+package ubc.cosc322;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
-import ubc.cosc322.movement.Moves;
-import ubc.cosc322.movement.SearchTree;
-import ubc.cosc322.movement.Graph;
+import ubc.cosc322.Graph.Moves;
+import ubc.cosc322.Algorithm.SearchTree;
+import ubc.cosc322.Graph.Graph;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -113,7 +113,7 @@ public class GameStateManager{
 		Moves.Move turn = new Moves.Move(initialIndex, newIndex, arrowIndex);
 
 		//Check validity
-		legalMovesMap = Moves.allMoves(currentBoardState, opponentPlayer);
+		legalMovesMap = Moves.possMoves(currentBoardState, opponentPlayer);
 
 		if(!legalMovesMap.containsKey(turn)){
 			String opponentColor = ""; 
@@ -142,7 +142,7 @@ public class GameStateManager{
 	 */
 	public Map<String, Object> findOurBestMove() {
 
-		legalMovesMap = Moves.allMoves(currentBoardState, ourPlayer);
+		legalMovesMap = Moves.possMoves(currentBoardState, ourPlayer);
 
 		int depth = 1;
 		for(int i = 5; i > 0; i--){
@@ -169,14 +169,14 @@ public class GameStateManager{
 
 	public Map<String, Object> updateBoardState(Moves.Move move){
 		Map<String, Object> playerMove = new HashMap<>();
-		playerMove.put(AmazonsGameMessage.QUEEN_POS_CURR, indexToCoordinates(move.currentIndex()));
-		playerMove.put(AmazonsGameMessage.QUEEN_POS_NEXT, indexToCoordinates(move.nextIndex()));
-		playerMove.put(AmazonsGameMessage.ARROW_POS, indexToCoordinates(move.arrowIndex()));
+		playerMove.put(AmazonsGameMessage.QUEEN_POS_CURR, indexToCoordinates(move.current_Index()));
+		playerMove.put(AmazonsGameMessage.QUEEN_POS_NEXT, indexToCoordinates(move.next_Index()));
+		playerMove.put(AmazonsGameMessage.ARROW_POS, indexToCoordinates(move.arrow_Index()));
 
 		//Don't forget to update the current state of the game!
 		currentBoardState = legalMovesMap.get(move);
 		
-		legalMovesMap = Moves.allMoves(currentBoardState, opponentPlayer);
+		legalMovesMap = Moves.possMoves(currentBoardState, opponentPlayer);
 		if(legalMovesMap.isEmpty()){
 			logger.info("We won! Opponent has no more legal moves.");
 		}

@@ -1,7 +1,7 @@
-package ubc.cosc322.movement;
+package ubc.cosc322.Graph;
 
 import ubc.cosc322.GameStateManager;
-import ubc.cosc322.movement.Graph;
+import ubc.cosc322.Graph.Graph;
 
 import java.util.*;
 
@@ -54,7 +54,7 @@ public class Moves {
     //     return moveMap;
     // }
 
-    public static Map<Move, Graph> possMoves(Graph graph, GameStateManager.Tile player){
+    public static Map<Move, Graph> possMoves(Graph graph, GameStateManager.Square player){
         Map<Move, Graph> moveMap = new HashMap<>();
 
         List<Graph.Node> playerNodes = getPlayerNodes(graph, player);
@@ -77,7 +77,7 @@ public class Moves {
                         while(arrow!=null){
 
                             //Create a new board state
-                            Graph move_State = Graph.copy(graph);
+                            Graph move_State = Graph.cloneGraph(graph);
                             Move move_Now = new Move(currentNode.getIndex(), next.getNode().getIndex(), arrow.getNode().getIndex());
                             move_State.updateGraph(move_Now, player);
 
@@ -115,7 +115,7 @@ public class Moves {
     //     return playerNodes;
     // }
 
-    private static List<Graph.Node> getPlayerNodes(Graph graph, GameStateManager.Tile player){
+    private static List<Graph.Node> getPlayerNodes(Graph graph, GameStateManager.Square player){
         List<Graph.Node> playerNodes = new LinkedList<>();
         Iterator<Graph.Node> iter = graph.getNodes().iterator();
         //Determine all possible moves for each player
@@ -136,9 +136,9 @@ public class Moves {
         public String toString(){
             StringBuilder sb = new StringBuilder();
 
-            List<Integer> currInd = GameStateManager.indexToArrayList(current_Index);
-            List<Integer> nextInd = GameStateManager.indexToArrayList(next_Index);
-            List<Integer> arrowInd = GameStateManager.indexToArrayList(arrow_Index);
+            List<Integer> currInd = GameStateManager.indexToCoordinates(current_Index);
+            List<Integer> nextInd = GameStateManager.indexToCoordinates(next_Index);
+            List<Integer> arrowInd = GameStateManager.indexToCoordinates(arrow_Index);
 
             sb.append("Queen current: (").append(currInd.get(0)).append(",").append(toLetter(currInd.get(1))).append(")\n");
             sb.append("Queen New: (").append(nextInd.get(0)).append(",").append(toLetter(nextInd.get(1))).append(")\n");

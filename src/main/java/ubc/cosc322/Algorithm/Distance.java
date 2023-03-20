@@ -1,6 +1,6 @@
-package ubc.cosc322.movement.heuristics;
+package ubc.cosc322.Algorithm;
 
-import ubc.cosc322.movement.Graph;
+import ubc.cosc322.Graph.Graph;
 import ubc.cosc322.GameStateManager;
 
 import java.util.*;
@@ -8,10 +8,10 @@ import java.util.*;
 public class Distance {
 
 	public class DistanceNode {
-	    public static Graph.Node node = null;
-	    public static GameStateManager.Tile nextPlayer = null;
+	    public  Graph.Node node = null;
+	    public  GameStateManager.Square nextPlayer = null;
 
-	    public DistanceNode(Graph.Node node, GameStateManager.Tile nextPlayer) {
+	    public DistanceNode(Graph.Node node, GameStateManager.Square nextPlayer) {
 	        this.node = node;
 	        this.nextPlayer = nextPlayer;
 	    }
@@ -20,7 +20,7 @@ public class Distance {
 	        return node;
 	    }
 
-	    public GameStateManager.Tile getNextPlayer() {
+	    public GameStateManager.Square getNextPlayer() {
 	        return nextPlayer;
 	    }
 
@@ -45,7 +45,7 @@ public class Distance {
      * @param player
      */
 
-    public static void allDistances(Graph graph, GameStateManager.Tile startingTile){
+    public static void allDistances(Graph graph, GameStateManager.Square startingTile){
 
         List<DistanceNode> nodeSearch = new LinkedList<>();
         Set<Graph.Node> unvisitedNodes = new HashSet<>();
@@ -54,7 +54,7 @@ public class Distance {
         
         for (int i = 0; i < nl.size(); i++) {
         	Graph.Node node = nl.get(i);
-            GameStateManager.Tile tile = node.getValue();
+            GameStateManager.Square tile = node.getValue();
             //Skip fire nodes
             if (tile.isFire()) {
                 continue;

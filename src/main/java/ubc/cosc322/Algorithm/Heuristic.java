@@ -1,6 +1,6 @@
-package ubc.cosc322.movement.heuristics;
+package ubc.cosc322.Algorithm;
 
-import ubc.cosc322.movement.Graph;
+import ubc.cosc322.Graph.Graph;
 import ubc.cosc322.GameStateManager;
 
 public class Heuristic {
@@ -9,7 +9,7 @@ public class Heuristic {
 
     }
 
-    public static float calculateT(Graph board, GameStateManager.Tile turn){
+    public static float calculateT(Graph board, GameStateManager.Square turn){
        
     	float f1 = 0;                             //calculates the number of filled tiles
         for(Graph.Node n : board.getNodes()) {
@@ -26,8 +26,8 @@ public class Heuristic {
                 continue;
             }
 
-            int qDist = (n.getValue() == GameStateManager.Tile.WHITE) ? n.getQdist1() : n.getQdist2();
-            int kDist = (n.getValue() == GameStateManager.Tile.WHITE) ? n.getKdist1() : n.getKdist2();
+            int qDist = (n.getValue() == GameStateManager.Square.WHITE) ? n.getQdist1() : n.getQdist2();
+            int kDist = (n.getValue() == GameStateManager.Square.WHITE) ? n.getKdist1() : n.getKdist2();
 
             f2 += Math.pow(qDist, 2) - Math.pow(kDist, 2);
         }
@@ -70,13 +70,13 @@ public class Heuristic {
         return (float) (x1 + x2 + x3 + x4);
     }
 
-    private static float Ti_value(GameStateManager.Tile player, int dist1, int dist2){
+    private static float Ti_value(GameStateManager.Square player, int dist1, int dist2){
     	float k = 1/5f;
 
         if(dist1 == Integer.MAX_VALUE && dist2 == Integer.MAX_VALUE) 
             return 0;
         else if(dist1 == dist2) {
-            if (player ==  GameStateManager.Tile.BLACK)
+            if (player ==  GameStateManager.Square.BLACK)
                 return -k;
             else
                 return k;  
