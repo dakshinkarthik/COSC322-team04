@@ -96,7 +96,7 @@ public class SearchTree {
 
         float best_Heuristic;
         Moves.Move bestMove = null;
-        Map<Moves.Move, Graph> movesMap = Moves.allMoves(graph, currentPlayer);
+        Map<Moves.Move, Graph> movesMap = Moves.possMoves(graph, currentPlayer);
 
         if (currentPlayer.isWhite()) {
 
