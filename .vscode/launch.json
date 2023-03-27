@@ -16,7 +16,7 @@
       "request": "launch",
       "mainClass": "ubc.cosc322.AIBot",
       "projectName": "team-00",
-      "args": ["sanjana1", "cosc322"]
+      "args": ["sanjana", "cosc322"]
     }
   ]
 }

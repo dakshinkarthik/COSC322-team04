@@ -1,10 +1,8 @@
 
 package ubc.cosc322.Algorithm;
 
-
 import java.util.Map;
 import ubc.cosc322.Graph.*;
-import ubc.cosc322.Algorithm.Heuristic;
 import ubc.cosc322.GameStateManager.Square;
 
 public class SearchTree {

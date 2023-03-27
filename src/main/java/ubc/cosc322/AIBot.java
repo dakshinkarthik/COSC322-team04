@@ -1,12 +1,8 @@
-
 package ubc.cosc322;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import ubc.cosc322.GameStateManager;
 import ygraph.ai.smartfox.games.*;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
 

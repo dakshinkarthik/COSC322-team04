@@ -1,8 +1,6 @@
 package ubc.cosc322.Graph;
 
 import ubc.cosc322.GameStateManager;
-import ubc.cosc322.Graph.Graph;
-
 import java.util.*;
 
 public class Moves {
@@ -57,12 +55,12 @@ public class Moves {
     public static Map<Move, Graph> possMoves(Graph graph, GameStateManager.Square player){
         Map<Move, Graph> moveMap = new HashMap<>();
 
-        List<Graph.Node> playerNodes = getPlayerNodes(graph, player);
-        Iterator<Graph.Node> iter = playerNodes.iterator();
+        List<GraphNode> playerNodes = getPlayerNodes(graph, player);
+        Iterator<GraphNode> iter = playerNodes.iterator();
         Graph.Edge.Direction[] directions = Graph.Edge.Direction.values();
         while (iter.hasNext()) {
             //Check all possible moves in each direction
-            Graph.Node currentNode = iter.next();
+            GraphNode currentNode = iter.next();
             for(Graph.Edge.Direction nextDir : directions){
 
                 Graph.Edge next = currentNode.getEdgeInDirection(nextDir);
@@ -78,7 +76,7 @@ public class Moves {
 
                             //Create a new board state
                             Graph move_State = Graph.cloneGraph(graph);
-                            Move move_Now = new Move(currentNode.getIndex(), next.getNode().getIndex(), arrow.getNode().getIndex());
+                            Move move_Now = new Move(currentNode.getNodeId(), next.getNode().getNodeId(), arrow.getNode().getNodeId());
                             move_State.updateGraph(move_Now, player);
 
                             moveMap.put(move_Now, move_State);
@@ -115,13 +113,13 @@ public class Moves {
     //     return playerNodes;
     // }
 
-    private static List<Graph.Node> getPlayerNodes(Graph graph, GameStateManager.Square player){
-        List<Graph.Node> playerNodes = new LinkedList<>();
-        Iterator<Graph.Node> iter = graph.getNodes().iterator();
+    private static List<GraphNode> getPlayerNodes(Graph graph, GameStateManager.Square player){
+        List<GraphNode> playerNodes = new LinkedList<>();
+        Iterator<GraphNode> iter = graph.getNodes().iterator();
         //Determine all possible moves for each player
         while(iter.hasNext()){
-            Graph.Node currentNode = iter.next();
-            if(currentNode.getValue() == player)
+            GraphNode currentNode = iter.next();
+            if(currentNode.getNodeValue() == player)
                 playerNodes.add(currentNode);
         }
 

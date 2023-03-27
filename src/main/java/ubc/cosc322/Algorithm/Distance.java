@@ -1,6 +1,6 @@
 package ubc.cosc322.Algorithm;
 
-import ubc.cosc322.Graph.Graph;
+import ubc.cosc322.Graph.*;
 import ubc.cosc322.GameStateManager;
 
 import java.util.*;
@@ -8,15 +8,15 @@ import java.util.*;
 public class Distance {
 
 	public class DistanceNode {
-	    public  Graph.Node node = null;
+	    public  GraphNode node = null;
 	    public  GameStateManager.Square nextPlayer = null;
 
-	    public DistanceNode(Graph.Node node, GameStateManager.Square nextPlayer) {
+	    public DistanceNode(GraphNode node, GameStateManager.Square nextPlayer) {
 	        this.node = node;
 	        this.nextPlayer = nextPlayer;
 	    }
 
-	    public Graph.Node getNode() {
+	    public GraphNode getNode() {
 	        return node;
 	    }
 
@@ -48,13 +48,13 @@ public class Distance {
     public static void allDistances(Graph graph, GameStateManager.Square startingTile){
 
         List<DistanceNode> nodeSearch = new LinkedList<>();
-        Set<Graph.Node> unvisitedNodes = new HashSet<>();
-        List<Graph.Node> nl = graph.getNodes();
+        Set<GraphNode> unvisitedNodes = new HashSet<>();
+        List<GraphNode> nl = graph.getNodes();
         int distanceBetweenNodes = 1;
         
         for (int i = 0; i < nl.size(); i++) {
-        	Graph.Node node = nl.get(i);
-            GameStateManager.Square tile = node.getValue();
+        	GraphNode node = nl.get(i);
+            GameStateManager.Square tile = node.getNodeValue();
             //Skip fire nodes
             if (tile.isFire()) {
                 continue;
@@ -65,9 +65,9 @@ public class Distance {
                 unvisitedNodes.add(node);
             }
             //Add player nodes to search list
-            if (node.getValue() == startingTile) {
-                node.playerZeroDistances(node.getValue());
-                Distance.DistanceNode distanceNode = new Distance().new DistanceNode(node, node.getValue());
+            if (node.getNodeValue() == startingTile) {
+                node.playerZeroDistances(node.getNodeValue());
+                Distance.DistanceNode distanceNode = new Distance().new DistanceNode(node, node.getNodeValue());
                 nodeSearch.add(distanceNode);
             }
 
@@ -98,14 +98,14 @@ public class Distance {
      * @return a List of newly visited nodes
      */
 
-    private static List<DistanceNode> allDistancesHelper(List<DistanceNode> initiaNode, int queenDistance, Set<Graph.Node> unvisitedNode){
+    private static List<DistanceNode> allDistancesHelper(List<DistanceNode> initiaNode, int queenDistance, Set<GraphNode> unvisitedNode){
 
         //A list of all newly visited startingNodes this iteration
         List<DistanceNode> newVistedNodes = new LinkedList<>();
 
         for(DistanceNode start : initiaNode) {
 
-        	Graph.Node initNode = start.node;
+        	GraphNode initNode = start.node;
             unvisitedNode.remove(initNode);
 
             //Move in each direction 1 tile at a time
@@ -122,7 +122,7 @@ public class Distance {
 
                 //Keep moving until we hit a wall, fire tile or another player
                 while(current!=null){
-                	Graph.Node currNode = current.getNode();
+                	GraphNode currNode = current.getNode();
 
                     //Update distances
                     if(start.getNextPlayer().isWhite()){
