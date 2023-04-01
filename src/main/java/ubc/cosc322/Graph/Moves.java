@@ -57,34 +57,34 @@ public class Moves {
 
         List<GraphNode> playerNodes = getPlayerNodes(graph, player);
         Iterator<GraphNode> iter = playerNodes.iterator();
-        Graph.Edge.Direction[] directions = Graph.Edge.Direction.values();
+        GraphEdge.Direction[] directions = GraphEdge.Direction.getAllDirections();
         while (iter.hasNext()) {
             //Check all possible moves in each direction
             GraphNode currentNode = iter.next();
-            for(Graph.Edge.Direction nextDir : directions){
+            for(GraphEdge.Direction nextDir : directions){
 
-                Graph.Edge next = currentNode.getEdgeInDirection(nextDir);
+                GraphEdge next = currentNode.getExistingEdge(nextDir);
 
                 while(next!=null){
 
                     //Check all possible arrow shows in each direction
-                    for(Graph.Edge.Direction arrowDir : directions){
+                    for(GraphEdge.Direction arrowDir : directions){
 
-                        Graph.Edge arrow = next.getNode().getEdgeInDirectionIgnoreStart(arrowDir, currentNode);
+                        GraphEdge arrow = next.getTargetNode().getAvailableOrStartEdge(currentNode, arrowDir );
 
                         while(arrow!=null){
 
                             //Create a new board state
                             Graph move_State = Graph.cloneGraph(graph);
-                            Move move_Now = new Move(currentNode.getNodeId(), next.getNode().getNodeId(), arrow.getNode().getNodeId());
+                            Move move_Now = new Move(currentNode.getNodeId(), next.getTargetNode().getNodeId(), arrow.getTargetNode().getNodeId());
                             move_State.updateGraph(move_Now, player);
 
                             moveMap.put(move_Now, move_State);
 
-                            arrow = arrow.getNode().getEdgeInDirectionIgnoreStart(arrowDir, currentNode);
+                            arrow = arrow.getTargetNode().getAvailableOrStartEdge(currentNode, arrowDir);
                         }
                     }
-                    next = next.getNode().getEdgeInDirection(nextDir);
+                    next = next.getTargetNode().getExistingEdge(nextDir);
                 }
 
             }

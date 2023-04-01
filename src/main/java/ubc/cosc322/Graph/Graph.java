@@ -21,18 +21,18 @@ public class Graph {
     public static Graph cloneGraph(Graph original){
         Graph clone = new Graph(original.nodes.size(), original.height, original.width);
         for (GraphNode n: original.getNodes()) {
-            clone.nodes.add(GraphNode.copy(n));
+            clone.nodes.add(GraphNode.cloneNode(n));
         }
 
 
         for (GraphNode n: original.getNodes()) {
             int index = n.getNodeId();
 
-            for(Edge e: n.getEdges()){
-                int otherIndex = e.other.getNodeId();
+            for(GraphEdge e: n.getEdges()){
+                int otherIndex = e.getTargetNode().getNodeId();
 
                 GraphNode copyNode = clone.nodes.get(index);
-                copyNode.getEdges().add(Edge.copy(e, clone.nodes.get(otherIndex)));
+                copyNode.getEdges().add(GraphEdge.clone(e, clone.nodes.get(otherIndex)));
             }
 
         }
@@ -106,56 +106,56 @@ public class Graph {
                 if(y - 1 >= 0){
                     int north = index - width;
                     GraphNode northNode = nodes.get(north);
-                    addEdge(node, northNode, Edge.Direction.NORTH, northNode.isEmpty());
+                    addEdge(node, northNode,GraphEdge.Direction.TOP, northNode.getNodeValue().isEmpty());
                 }
 
                 //Connect northeast node
                 if(y - 1 >= 0 && x + 1 < width){
                     int northEast = index - width + 1;
                     GraphNode northEastNode = nodes.get(northEast);
-                    addEdge(node, northEastNode, Edge.Direction.NORTH_EAST, northEastNode.isEmpty());
+                    addEdge(node, northEastNode, GraphEdge.Direction.TOP_RIGHT, northEastNode.getNodeValue().isEmpty());
                 }
 
                 //Connect east node
                 if(x + 1 < width){
                     int east = index + 1;
                     GraphNode eastNode = nodes.get(east);
-                    addEdge(node, eastNode, Edge.Direction.EAST, eastNode.isEmpty());
+                    addEdge(node, eastNode, GraphEdge.Direction.RIGHT, eastNode.getNodeValue().isEmpty());
                 }
 
                 //Connect southeast node
                 if(y + 1 < height && x + 1 < width){
                     int southEast = index + width + 1;
                     GraphNode southEastNode = nodes.get(southEast);
-                    addEdge(node, southEastNode, Edge.Direction.SOUTH_EAST, southEastNode.isEmpty());
+                    addEdge(node, southEastNode, GraphEdge.Direction.BOTTOM_RIGHT, southEastNode.getNodeValue().isEmpty());
                 }
 
                 //Connect south node
                 if(y + 1 < height){
                     int south = index + width;
                     GraphNode southNode = nodes.get(south);
-                    addEdge(node, southNode, Edge.Direction.SOUTH, southNode.isEmpty());
+                    addEdge(node, southNode, GraphEdge.Direction.BOTTOM, southNode.getNodeValue().isEmpty());
                 }
 
                 //Connect southwest node
                 if(y + 1 < height && x - 1 >= 0){
                     int southWest = index + width - 1;
                     GraphNode southWestNode = nodes.get(southWest);
-                    addEdge(node, southWestNode, Edge.Direction.SOUTH_WEST, southWestNode.isEmpty());
+                    addEdge(node, southWestNode, GraphEdge.Direction.BOTTOM_LEFT, southWestNode.getNodeValue().isEmpty());
                 }
 
                 //Connect west node
                 if(x - 1 >= 0){
                     int west = index - 1;
                     GraphNode westNode = nodes.get(west);
-                    addEdge(node, westNode, Edge.Direction.WEST, westNode.isEmpty());
+                    addEdge(node, westNode, GraphEdge.Direction.LEFT, westNode.getNodeValue().isEmpty());
                 }
 
                 //Connect northwest node
                 if(y - 1 >= 0 && x - 1 >= 0){
                     int northWest = index - width - 1;
                     GraphNode northWestNode = nodes.get(northWest);
-                    addEdge(node, northWestNode, Edge.Direction.NORTH_WEST, northWestNode.isEmpty());
+                    addEdge(node, northWestNode, GraphEdge.Direction.TOP_LEFT, northWestNode.getNodeValue().isEmpty());
                 }
             }
         }
@@ -178,22 +178,22 @@ public class Graph {
         return nodes;
     }
 
-    private void addEdge(GraphNode n1, GraphNode n2, Edge.Direction direction, boolean enabled){
+    private void addEdge(GraphNode n1, GraphNode n2, GraphEdge.Direction direction, boolean enabled){
         if(n1.getEdges().size() == 8){
             return;
         }
-        n1.getEdges().add(new Edge(n2, direction, enabled));
+        n1.getEdges().add(new GraphEdge(n2, direction, enabled));
     }
 
     private void toggleConnectedNodeEdges(GraphNode n, boolean toggle) {
-        for (Edge e : n.getEdges())
-            for (Edge e2 : e.other.getEdges())
-                if (e2.other == n)
-                    e2.enabled = toggle;
+        for (GraphEdge e : n.getEdges())
+            for (GraphEdge e2 : e.getTargetNode().getEdges())
+                if (e2.getTargetNode() == n)
+                    e2.setEdgeExists(toggle);
     }
 
     private void updateDistances(){
-        for(GraphNode n : nodes) n.resetDistances();
+        for(GraphNode n : nodes) n.initializeAllDistances();
         Distance.allDistances(this, GameStateManager.Square.WHITE);
         Distance.allDistances(this, GameStateManager.Square.BLACK);
     }
@@ -243,62 +243,6 @@ public class Graph {
     public int hashCode(){
         return super.hashCode();
     }
-
-    public static class Edge {
-
-        public static Edge copy(Edge source, GraphNode otherCopy){
-            return new Edge(otherCopy, source.direction, source.enabled);
-        }
-
-        public enum Direction {
-            NORTH("North"),
-            NORTH_EAST("North East"),
-            EAST("East"),
-            SOUTH_EAST("South East"),
-            SOUTH("South"),
-            SOUTH_WEST("South West"),
-            WEST("West"),
-            NORTH_WEST("North West");
-
-            public final String label;
-
-            Direction(String direction) {
-                this.label = direction;
-            }
-
-            @Override
-            public String toString(){
-                return label;
-            }
-
-        }
-
-        private final GraphNode other;
-        private final Direction direction;
-        private boolean enabled;
-
-        public Edge(GraphNode other, Direction direction, boolean enabled){
-            this.other = other;
-            this.direction = direction;
-            this.enabled = enabled;
-        }
-
-        @Override
-        public String toString(){
-            return "Node Id:" + other.getNodeId() + ", Node Value: "+ other.getNodeValue() + ", Direction: " + direction;
-        }
-
-        public GraphNode getNode(){
-            return other;
-        }
-
-        public Direction getDirection() {
-            return direction;
-        }
-
-        public boolean isEnabled() { return enabled; }
-
-    }
-
     
-}
+
+   }

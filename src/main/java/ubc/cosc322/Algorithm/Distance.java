@@ -66,7 +66,7 @@ public class Distance {
             }
             //Add player nodes to search list
             if (node.getNodeValue() == startingTile) {
-                node.playerZeroDistances(node.getNodeValue());
+                node.setPlayerDistancesZero(node.getNodeValue());
                 Distance.DistanceNode distanceNode = new Distance().new DistanceNode(node, node.getNodeValue());
                 nodeSearch.add(distanceNode);
             }
@@ -109,31 +109,31 @@ public class Distance {
             unvisitedNode.remove(initNode);
 
             //Move in each direction 1 tile at a time
-            for (Graph.Edge.Direction direction : Graph.Edge.Direction.values()) {
+            for (GraphEdge.Direction direction : GraphEdge.Direction.getAllDirections()) {
 
-            	Graph.Edge current = initNode.getEdgeInDirection(direction);
+            	GraphEdge current = initNode.getExistingEdge(direction);
 
                 //kDist is set to the starting startingNodes k distance from the player
                 int arrowDistance = 1;
                 if(start.nextPlayer.isWhite())
-                    arrowDistance = initNode.getKdist1();
+                    arrowDistance = initNode.getKingDistanceWhite();
                 else if(start.nextPlayer.isBlack())
-                    arrowDistance = initNode.getKdist2();
+                    arrowDistance = initNode.getKingDistanceBlack();
 
                 //Keep moving until we hit a wall, fire tile or another player
                 while(current!=null){
-                	GraphNode currNode = current.getNode();
+                	GraphNode currNode = current.getTargetNode();
 
                     //Update distances
                     if(start.getNextPlayer().isWhite()){
-                        if(currNode.getQdist1() > queenDistance) currNode.setQdist1(queenDistance);
-                        if(currNode.getKdist1() > arrowDistance) currNode.setKdist1(++arrowDistance);
+                        if(currNode.getQueenDistanceWhite() > queenDistance) currNode.setQueenDistanceWhite(queenDistance);
+                        if(currNode.getKingDistanceWhite() > arrowDistance) currNode.setKingDistanceWhite(++arrowDistance);
                     }
                     
                     else if(start.getNextPlayer().isBlack())
                     {
-                        if(currNode.getQdist2() > queenDistance) currNode.setQdist2(queenDistance);
-                        if(currNode.getKdist2() > arrowDistance) currNode.setKdist2(++arrowDistance);
+                        if(currNode.getQueenDistanceBlack() > queenDistance) currNode.setQueenDistanceBlack(queenDistance);
+                        if(currNode.getKingDistanceBlack() > arrowDistance) currNode.setKingDistanceBlack(++arrowDistance);
                     }
 
                     //Add the node to the return list if it was visited for the first time this iteration
@@ -143,7 +143,7 @@ public class Distance {
                     }
 
                     //Move to the next tile
-                    current = currNode.getEdgeInDirection(direction);
+                    current = currNode.getExistingEdge(direction);
                 }
 
 

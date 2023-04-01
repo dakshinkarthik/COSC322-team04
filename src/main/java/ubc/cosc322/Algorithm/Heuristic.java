@@ -26,8 +26,8 @@ public class Heuristic {
                 continue;
             }
 
-            int qDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getQdist1() : n.getQdist2();
-            int kDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getKdist1() : n.getKdist2();
+            int qDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getQueenDistanceWhite() : n.getQueenDistanceBlack();
+            int kDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getKingDistanceWhite() : n.getKingDistanceBlack();
 
             f2 += Math.pow(qDist, 2) - Math.pow(kDist, 2);
         }
@@ -57,8 +57,8 @@ public class Heuristic {
                 continue;
             }
             
-            t1 += Ti_value(turn, n.getQdist1(), n.getQdist2());
-            t2 += Ti_value(turn, n.getKdist1(), n.getKdist2());
+            t1 += Ti_value(turn, n.getQueenDistanceWhite(), n.getQueenDistanceBlack());
+            t2 += Ti_value(turn, n.getKingDistanceWhite(), n.getKingDistanceBlack());
             
         }
 
@@ -88,8 +88,8 @@ public class Heuristic {
     private static float C1_value(Graph board){
     	float sum = 0;
         for (GraphNode n : board.getNodes()) {
-            float term1 = (float) Math.pow(2, -n.getQdist1());
-            float term2 = (float) Math.pow(2, -n.getQdist2());
+            float term1 = (float) Math.pow(2, -n.getQueenDistanceWhite());
+            float term2 = (float) Math.pow(2, -n.getQueenDistanceBlack());
             sum += term1 - term2;
         }
         return 2 * sum;
@@ -98,7 +98,7 @@ public class Heuristic {
     private static float C2_value(Graph board){
         float sum = 0;
         for (GraphNode n : board.getNodes()) {
-            sum += Math.min(1, Math.max(-1, ((n.getKdist2() - n.getKdist1()) / 6f)));
+            sum += Math.min(1, Math.max(-1, ((n.getKingDistanceBlack() - n.getKingDistanceWhite()) / 6f)));
         }
 
         return sum;

@@ -3,154 +3,156 @@ package ubc.cosc322.Graph;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import ubc.cosc322.GameStateManager;
-import ubc.cosc322.Graph.Graph.Edge;
 
 public class GraphNode {
 
-    private final int id;
-    private GameStateManager.Square value;
-    private final List<Edge> edges;
-
-    private int qdist1;
-    private int qdist2;
-    private int kdist1;
-    private int kdist2;
+    private int id;
+    private  List<GraphEdge> edgeList;
+    private int kingDistanceWhite;
+    private int kingDistanceBlack;
+    private int queenDistanceWhite;
+    private int queenDistanceBlack;
+    private GameStateManager.Square squareValue;
 
     
 
     public GraphNode(int id, GameStateManager.Square value){
         this.id = id;
+        edgeList = new ArrayList<>();
         setNodeValue(value);
-        resetDistances();
-        edges = new ArrayList<>();
+        initializeAllDistances();
     }
 
 
-    public static GraphNode copy(GraphNode source){
-        GraphNode copy = new GraphNode(source.id, source.value);
-        copy.kdist1 = source.kdist1;
-        copy.kdist2 = source.kdist2;
-        copy.qdist1 = source.qdist1;
-        copy.qdist2 = source.qdist2;
+     //initializes all distances to infinity (max value of int)
+     public void initializeAllDistances(){
+        setQueenDistanceWhite(Integer.MAX_VALUE);
+        setQueenDistanceBlack(Integer.MAX_VALUE);
+        setKingDistanceWhite(Integer.MAX_VALUE);
+        setKingDistanceBlack(Integer.MAX_VALUE);
+    }
 
-        return copy;
+
+    /**
+     * Creates an identical deep copy of the source node
+     * @param original
+     * @return a copy of the source node
+     */
+    public static GraphNode cloneNode(GraphNode original){
+        GraphNode clone = new GraphNode(original.id, original.squareValue);
+        clone.setKingDistanceWhite(original.getKingDistanceWhite());
+        clone.setKingDistanceBlack(original.getKingDistanceBlack());
+        clone.setQueenDistanceWhite(original.getQueenDistanceWhite());
+        clone.setQueenDistanceBlack(original.getQueenDistanceBlack());
+        return clone;
+    }
+
+    
+    public void setPlayerDistancesZero(GameStateManager.Square player){
+        if(player.isBlack()){
+            setQueenDistanceBlack(0);
+            setKingDistanceBlack(0);  
+        }else {
+            setQueenDistanceWhite(0);
+            setKingDistanceWhite(0);
+        }
+    }
+
+    
+    public GraphEdge getExistingEdge(GraphEdge.Direction direction){
+        for(GraphEdge edge : edgeList){
+
+            if(!edge.getEdgeExists()){
+                continue;
+            }
+            if (edge.getEdgeDirection() == direction) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
+
+    public void setNodeValue(GameStateManager.Square value) {
+        if(value.isFire()) {
+            setQueenDistanceBlack(0);
+            setKingDistanceBlack(0);  
+            setQueenDistanceWhite(0);
+            setKingDistanceWhite(0);
+        }
+        this.squareValue = value;
+    }
+
+    public GraphEdge getAvailableOrStartEdge(GraphNode start, GraphEdge.Direction direction){
+        for(GraphEdge edge : edgeList){
+            if(edge.getEdgeDirection() != direction) {
+                continue;
+            }
+            if ((edge.getEdgeExists() || edge.getTargetNode().equals(start))) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
+    public int getNodeId(){ 
+        return id; 
+    }
+
+    public GameStateManager.Square getNodeValue() {
+        return squareValue;
+    }
+
+    public List<GraphEdge> getEdges(){
+        return edgeList;
+    }
+
+
+    public int getQueenDistanceWhite() {
+        return queenDistanceWhite;
+    }
+
+    public void setQueenDistanceWhite(int queenDistanceWhite) {
+        this.queenDistanceWhite = queenDistanceWhite;
+    }
+
+    public int getQueenDistanceBlack() {
+        return queenDistanceBlack;
+    }
+
+    public void setQueenDistanceBlack(int queenDistanceBlack) {
+        this.queenDistanceBlack = queenDistanceBlack;
+    }
+
+    public int getKingDistanceWhite() {
+        return kingDistanceWhite;
+    }
+
+    public void setKingDistanceWhite(int kingDistanceWhite) {
+        this.kingDistanceWhite = kingDistanceWhite;
+    }
+
+    public int getKingDistanceBlack() {
+        return kingDistanceBlack;
+    }
+
+    public void setKingDistanceBlack(int kingDistanceBlack) {
+        this.kingDistanceBlack = kingDistanceBlack;
     }
 
    
 
-    
-    /**
-     * Sets all distances to Integer.MAX_VALUE
-     */
-    public void resetDistances(){
-        qdist1 = Integer.MAX_VALUE;
-        qdist2 = Integer.MAX_VALUE;
-        kdist1 = Integer.MAX_VALUE;
-        kdist2 = Integer.MAX_VALUE;
-    }
-
-    /**
-     * Sets all distances to 0
-     */
-    public void zeroDistances(){
-        qdist1 = 0;
-        qdist2 = 0;
-        kdist1 = 0;
-        kdist2 = 0;
-    }
-
-    /**
-     * Sets kDist and qDist to 0 for the given player
-     * @param player
-     */
-    public void playerZeroDistances(GameStateManager.Square player){
-        if(player.isWhite()){
-            qdist1 = 0;
-            kdist1 = 0;
-        }else if(player.isBlack()){
-            qdist2 = 0;
-            kdist2 = 0;
-        }
-    }
-
-    /**
-     * Returns an edge connected to the node in the given direction
-     * @param dir
-     * @return An edge in the specified direction,
-     * or null if the edge is disabled or non-existent.
-     */
-    public Edge getEdgeInDirection(Edge.Direction dir){
-        for(Edge e : edges){
-            if (e.getDirection() == dir && e.isEnabled()) return e;
-        }
-        return null;
-    }
-
-    public Edge getEdgeInDirectionIgnoreStart(Edge.Direction dir, GraphNode start){
-        for(Edge e : edges){
-            if (
-                    (e.getDirection() == dir && e.isEnabled()) ||
-                    (e.getDirection() == dir && e.getNode().equals(start))
-            ) return e;
-        }
-        return null;
-    }
-
-    public int getNodeId(){ return id; }
-
-    public boolean isEmpty(){
-        return value.isEmpty();
-    }
-
-    public GameStateManager.Square getNodeValue() {
-        return value;
-    }
-
-    public void setNodeValue(GameStateManager.Square value) {
-        if(value.isFire()) zeroDistances();
-        this.value = value;
-    }
-
-    public int getQdist1() {
-        return qdist1;
-    }
-
-    public void setQdist1(int qdist1) {
-        this.qdist1 = qdist1;
-    }
-
-    public int getQdist2() {
-        return qdist2;
-    }
-
-    public void setQdist2(int qdist2) {
-        this.qdist2 = qdist2;
-    }
-
-    public int getKdist1() {
-        return kdist1;
-    }
-
-    public void setKdist1(int kdist1) {
-        this.kdist1 = kdist1;
-    }
-
-    public int getKdist2() {
-        return kdist2;
-    }
-
-    public void setKdist2(int kdist2) {
-        this.kdist2 = kdist2;
-    }
-
-    public List<Edge> getEdges(){
-        return edges;
-    }
-
-    @Override
     public boolean equals(Object o) {
-        return o instanceof GraphNode n && n.id == id && n.value == value;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GraphNode n = (GraphNode) o;
+        if(id==n.id && squareValue==n.squareValue) {
+            return true;
+        }
+        return false;
     }
 
     @Override
