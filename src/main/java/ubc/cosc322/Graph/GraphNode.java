@@ -105,7 +105,7 @@ public class GraphNode {
         return squareValue;
     }
 
-    public List<GraphEdge> getEdges(){
+    public List<GraphEdge> getAllEdges(){
         return edgeList;
     }
 
