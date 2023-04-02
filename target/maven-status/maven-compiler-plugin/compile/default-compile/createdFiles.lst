@@ -10,6 +10,5 @@ ubc\cosc322\GameStateManager.class
 ubc\cosc322\Graph\Graph$Node.class
 ubc\cosc322\Algorithm\Distance$DistanceNode.class
 ubc\cosc322\Algorithm\SearchTree$MinimaxMove.class
-ubc\cosc322\AIBot$1.class
 ubc\cosc322\Graph\Graph$Edge$Direction.class
 ubc\cosc322\AIBot.class
