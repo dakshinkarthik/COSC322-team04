@@ -1,5 +1,5 @@
-
 package ubc.cosc322.Algorithm;
+
 
 import java.util.Map;
 import ubc.cosc322.Graph.*;
@@ -10,68 +10,61 @@ public class SearchTree {
     private SearchTree() {
 
     }
-
-    public record MinimaxMove(Moves.Move move, float heuristic) { }
+ // This class is used to store the result of alpha-beta pruning
+    public record AlphaBetaResult(Moves.Move move, float heuristic) { }
     
-    public static Moves.Move performAlphaBeta(Graph graph, Square currentPlayer, int depth) {
-        MinimaxMove chosenOne = AlphaBeta(graph, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, currentPlayer, null);
-        return chosenOne.move;
+    /**
+    This method uses the alpha-beta pruning algorithm to find the best possible move for the given player
+    at the given depth in the game tree.
+    @param graph the graph representing the game state
+    @param currentPlayer the player for whom the best move is being searched
+    @param depth the depth of the game tree to search
+    @return the best move found using alpha-beta pruning algorithm
+    */
+    public static Moves.Move findBestMoveUsingAlphaBeta(Graph graph, Square currentPlayer, int depth) {
+    	AlphaBetaResult bestAlphaBetaMove = alphaBetaPruning(graph, depth, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, currentPlayer, null);
+        return bestAlphaBetaMove.move;
     }
 
+    /**
+    Perform alpha-beta pruning to find the best move for a given player at a specific search depth.
+    @param graph the graph representing the current state of the game
+    @param searchLevel the depth of the search tree
+    @param alpha the alpha value for alpha-beta pruning
+    @param beta the beta value for alpha-beta pruning
+    @param currentPlayer the player whose turn it is to make a move
+    @param prevMove the previous move made in the game
+    @return an AlphaBetaResult object containing the optimal move and its corresponding score
+    */
+    private static AlphaBetaResult alphaBetaPruning(Graph graph, int searchLevel, float alpha, float beta, Square currentPlayer, Moves.Move prevMove) {
+    	// If the search depth has reached zero, return the heuristic value of the current state
+    	if (searchLevel == 0)
+            return new AlphaBetaResult(prevMove, Heuristic.calculateT(graph, currentPlayer));
 
-    private static MinimaxMove AlphaBeta(Graph graph, int depth, float alpha, float beta, Square currentPlayer, Moves.Move prevMove) {
-        if (depth == 0)
-            return new MinimaxMove(prevMove, Heuristic.calculateT(graph, currentPlayer));
+        float optimalValue = (currentPlayer.isWhite() ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY);
+        Moves.Move optimalMove = null;
 
-        float best_Heuristic;
-        Moves.Move bestMove = null;
-        Map<Moves.Move, Graph> movesMap = Moves.possMoves(graph, currentPlayer);
-
-        if (currentPlayer.isWhite()) {
-
-            best_Heuristic = Integer.MIN_VALUE;
-
-            for (Map.Entry<Moves.Move, Graph> entry : movesMap.entrySet()) {
-                Moves.Move currentMove = entry.getKey();
-                float chosen_Heurtistic = AlphaBeta(entry.getValue(), depth - 1, alpha, beta, Square.BLACK, currentMove).heuristic;
-                if (best_Heuristic < chosen_Heurtistic) {
-                    best_Heuristic = chosen_Heurtistic;
-                    bestMove = currentMove;
-                }
+     // Iterate over all possible moves for the current player and calculate their scores
+        	for (Map.Entry<Moves.Move, Graph> action : Moves.possibleMoves(graph, currentPlayer).entrySet()) {
+                float optimalScore = alphaBetaPruning(action.getValue(), searchLevel - 1, alpha, beta, Square.BLACK, action.getKey()).heuristic;
+             // If the current score is better than the current optimal score, update the optimal score and move
+                if ((currentPlayer.isWhite() && optimalScore > optimalValue) ||
+                        (!currentPlayer.isWhite() && optimalScore < optimalValue)) {
+                	optimalValue = optimalScore;
+                	optimalMove = action.getKey();
+                    }
                 
-//                best_Heuristic = (best_Heuristic < chosen_Heurtistic) ? chosen_Heurtistic : best_Heuristic;
-//                bestMove = (best_Heuristic < chosen_Heurtistic) ? currentMove : bestMove;
+             // Update alpha and beta values based on the player
+                if (currentPlayer.isWhite())
+                    alpha = Math.max(alpha, optimalValue);
+                else
+                    beta = Math.max(alpha, optimalValue);
 
-                alpha = Math.max(alpha, best_Heuristic);
-                if (beta <= alpha) {
+             // If beta is less than or equal to alpha, stop searching further
+                if (beta <= alpha)
                     break;
                 }
-            }
-
-        } else {
-
-            best_Heuristic = Integer.MAX_VALUE;
-
-            for (Map.Entry<Moves.Move, Graph> entry : movesMap.entrySet()) {
-                float chosen_Heurtistic = AlphaBeta(entry.getValue(), depth - 1, alpha, beta, Square.WHITE, entry.getKey()).heuristic;
-                if (best_Heuristic > chosen_Heurtistic) {
-                    best_Heuristic = chosen_Heurtistic;
-                    bestMove = entry.getKey();
-                }
-                
-//                best_Heuristic = (best_Heuristic > chosen_Heurtistic) ? chosen_Heurtistic : best_Heuristic;
-//                bestMove = (best_Heuristic > chosen_Heurtistic) ? entry.getKey() : bestMove;
-
-
-                beta = Math.max(alpha, best_Heuristic);
-                if (beta <= alpha) {
-                    break;
-                }
-            }
-        }
-        return new MinimaxMove(bestMove, best_Heuristic);
+        	// Return the optimal move and score at the current search level
+        return new AlphaBetaResult(optimalMove, optimalValue);
     }
 }
-
-
-

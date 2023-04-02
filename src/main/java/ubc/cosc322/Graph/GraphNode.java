@@ -76,7 +76,7 @@ public class GraphNode {
 
 
     public void setNodeValue(GameStateManager.Square value) {
-        if(value.isFire()) {
+        if(value.isArrow()) {
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
             setQueenDistanceWhite(0);
@@ -105,7 +105,7 @@ public class GraphNode {
         return squareValue;
     }
 
-    public List<GraphEdge> getEdges(){
+    public List<GraphEdge> getAllEdges(){
         return edgeList;
     }
 
@@ -148,8 +148,8 @@ public class GraphNode {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        GraphNode n = (GraphNode) o;
-        if(id==n.id && squareValue==n.squareValue) {
+        GraphNode node = (GraphNode) o;
+        if(id==node.id && squareValue==node.squareValue) {
             return true;
         }
         return false;

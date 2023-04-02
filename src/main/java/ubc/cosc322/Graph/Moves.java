@@ -1,74 +1,59 @@
+
 package ubc.cosc322.Graph;
 
 import ubc.cosc322.GameStateManager;
 import java.util.*;
 
 public class Moves {
+	
+	  public record Move(int current_Index, int next_Index, int arrow_Index){
+	    	
+	    }
+	  
+	  /**
+	  Returns a map of all possible moves a player can make on a given graph, based on the current state of the game.
+	  @param graph the graph representing the current state of the game
+	  @param player the player whose moves are being generated
+	  @return a map of all possible moves the player can make, with each move corresponding to a new cloned graph
+	  reflecting the state of the game after the move is made
+	  **/
+    public static Map<Move, Graph> possibleMoves(Graph graph, GameStateManager.Square player){
+        List<GraphNode> currentPlayer = new LinkedList<>();
+        Iterator<GraphNode> iter1 = graph.getAllGraphNodes().iterator();
+        while(iter1.hasNext()){
+            GraphNode currentNode = iter1.next();
+            if(currentNode.getNodeValue() == player)
+            	currentPlayer.add(currentNode);
+        }
 
-    public static Map<Move, Graph> possMoves(Graph graph, GameStateManager.Square player){
-        Map<Move, Graph> moveMap = new HashMap<>();
-
-        List<GraphNode> playerNodes = getPlayerNodes(graph, player);
-        Iterator<GraphNode> iter = playerNodes.iterator();
-        GraphEdge.Direction[] directions = GraphEdge.Direction.getAllDirections();
+     // Iterates over all the nodes in the location list and for each node, iterates over all its edges and
+      // for each edge, iterates over all the edges it points to.
+      // Generates a Move for each combination of nodes and adds it to the playerMoves map.
+        Map<Move, Graph> playerMoves = new HashMap<>();
+        Iterator<GraphNode> iter = currentPlayer.iterator();
+        GraphEdge.Direction[] path = GraphEdge.Direction.getAllDirections();
         while (iter.hasNext()) {
-            //Check all possible moves in each direction
-            GraphNode currentNode = iter.next();
-            for(GraphEdge.Direction nextDir : directions){
-
-                GraphEdge next = currentNode.getExistingEdge(nextDir);
-
-                while(next!=null){
-
-                    //Check all possible arrow shows in each direction
-                    for(GraphEdge.Direction arrowDir : directions){
-
-                        GraphEdge arrow = next.getTargetNode().getAvailableOrStartEdge(currentNode, arrowDir );
-
-                        while(arrow!=null){
-
-                            //Create a new board state
-                            Graph move_State = Graph.cloneGraph(graph);
-                            Move move_Now = new Move(currentNode.getNodeId(), next.getTargetNode().getNodeId(), arrow.getTargetNode().getNodeId());
-                            move_State.updateGraphWithNewMove(move_Now, player);
-
-                            moveMap.put(move_Now, move_State);
-
-                            arrow = arrow.getTargetNode().getAvailableOrStartEdge(currentNode, arrowDir);
+            GraphNode node = iter.next();
+            for(GraphEdge.Direction next : path){
+            	GraphEdge currentEdge = node.getExistingEdge(next);
+                while(currentEdge!=null){
+                    for(GraphEdge.Direction directionOfArrow : path){
+                    	GraphEdge EdgeInDir = currentEdge.getTargetNode().getAvailableOrStartEdge(node, directionOfArrow);
+                    	while(EdgeInDir!=null){
+                    		 // Clones the current graph
+                            Graph clone = Graph.cloneGraph(graph);
+                             // creating a new move based on the edges available
+                            Move currentMove = new Move(node.getNodeId(), currentEdge.getTargetNode().getNodeId(), EdgeInDir.getTargetNode().getNodeId());
+                            clone.updateGraphWithNewMove(currentMove, player);
+                            // adding the move and the cloned graph to the Map
+                            playerMoves.put(currentMove, clone);
+                            EdgeInDir = EdgeInDir.getTargetNode().getAvailableOrStartEdge(node, directionOfArrow);
                         }
                     }
-                    next = next.getTargetNode().getExistingEdge(nextDir);
+                    currentEdge = currentEdge.getTargetNode().getExistingEdge(next);
                 }
-
             }
         }
-        
-        return moveMap;
+        return playerMoves;
     }
-
- 
-
-   
-
-    private static List<GraphNode> getPlayerNodes(Graph graph, GameStateManager.Square player){
-        List<GraphNode> playerNodes = new LinkedList<>();
-        Iterator<GraphNode> iter = graph.getAllGraphNodes().iterator();
-        //Determine all possible moves for each player
-        while(iter.hasNext()){
-            GraphNode currentNode = iter.next();
-            if(currentNode.getNodeValue() == player)
-                playerNodes.add(currentNode);
-        }
-
-        return playerNodes;
-    }
-
-    
-
-    public record Move(int current_Index, int next_Index, int arrow_Index){
-
-        
-
-    }
-
 }
