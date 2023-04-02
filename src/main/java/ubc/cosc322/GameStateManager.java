@@ -18,6 +18,7 @@ public class GameStateManager{
 
 	private static final int THRESHOLD = 250000;	//ME: try different values
 	private static final int DIM = 10;
+	//public static won = false;
 	private static final int[][] BOARD_STATE_BEGINNING = {
 
 			{0, 0, 0, 2, 0, 0, 2, 0, 0, 0},
@@ -130,9 +131,9 @@ public class GameStateManager{
 
 		//Update the graph
 		if(ourPlayer.isWhite())
-			currentBoardState.updateGraph(turn, Square.BLACK);
+			currentBoardState.updateGraphWithNewMove(turn, Square.BLACK);
 		else
-			currentBoardState.updateGraph(turn, Square.WHITE);
+			currentBoardState.updateGraphWithNewMove(turn, Square.WHITE);
 
 	}
 

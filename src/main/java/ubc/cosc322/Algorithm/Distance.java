@@ -49,7 +49,7 @@ public class Distance {
 
         List<DistanceNode> nodeSearch = new LinkedList<>();
         Set<GraphNode> unvisitedNodes = new HashSet<>();
-        List<GraphNode> nl = graph.getNodes();
+        List<GraphNode> nl = graph.getAllGraphNodes();
         int distanceBetweenNodes = 1;
         
         for (int i = 0; i < nl.size(); i++) {

@@ -12,7 +12,7 @@ public class Heuristic {
     public static float calculateT(Graph board, GameStateManager.Square turn){
        
     	float f1 = 0;                             //calculates the number of filled tiles
-        for(GraphNode n : board.getNodes()) {
+        for(GraphNode n : board.getAllGraphNodes()) {
             if(!n.getNodeValue().isEmpty()) {
                 f1++;
             }
@@ -21,7 +21,7 @@ public class Heuristic {
         
         
         float f2 = 0;
-        for (GraphNode n : board.getNodes()) {
+        for (GraphNode n : board.getAllGraphNodes()) {
             if (n.getNodeValue().isEmpty()) {
                 continue;
             }
@@ -34,7 +34,7 @@ public class Heuristic {
         
         
         float f3 = 0;                              
-        for (GraphNode n : board.getNodes()) {
+        for (GraphNode n : board.getAllGraphNodes()) {
             if (!n.getNodeValue().isEmpty()) {
                 f3++;
             }
@@ -52,7 +52,7 @@ public class Heuristic {
         float t1 = 0;
         float t2 = 0;
 
-        for (GraphNode n : board.getNodes()) {
+        for (GraphNode n : board.getAllGraphNodes()) {
             if (n.getNodeValue().isEmpty()) {
                 continue;
             }
@@ -87,7 +87,7 @@ public class Heuristic {
 
     private static float C1_value(Graph board){
     	float sum = 0;
-        for (GraphNode n : board.getNodes()) {
+        for (GraphNode n : board.getAllGraphNodes()) {
             float term1 = (float) Math.pow(2, -n.getQueenDistanceWhite());
             float term2 = (float) Math.pow(2, -n.getQueenDistanceBlack());
             sum += term1 - term2;
@@ -97,7 +97,7 @@ public class Heuristic {
 
     private static float C2_value(Graph board){
         float sum = 0;
-        for (GraphNode n : board.getNodes()) {
+        for (GraphNode n : board.getAllGraphNodes()) {
             sum += Math.min(1, Math.max(-1, ((n.getKingDistanceBlack() - n.getKingDistanceWhite()) / 6f)));
         }
 

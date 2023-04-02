@@ -13,7 +13,7 @@ public class GraphEdge {
         	this.targetNode = targetNode; 
         }
 
-        public static GraphEdge clone(GraphEdge edge, GraphNode connectedNode){
+        public static GraphEdge cloneEdge(GraphEdge edge, GraphNode connectedNode){
             return new GraphEdge(connectedNode, edge.getEdgeDirection(), edge.edgeExists);
         }
 
