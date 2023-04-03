@@ -1,9 +1,5 @@
 package ubc.cosc322.Algorithm;
-
 import ubc.cosc322.Graph.Graph;
-
-
-
 import ubc.cosc322.GameStateManager;
 import ubc.cosc322.GameStateManager.Square;
 
@@ -12,9 +8,11 @@ public class Heuristic {
     private Heuristic(){
 
     }
-
+    // This is the heuristic function that we will use to evaluate the board state
     public static float calculateHeuristicValue(Graph board, Square player) {
-        float numFilledTiles = 0; //tiles that are not empty
+        
+        float numFilledTiles = 0; 
+        // Count the number of tiles that are not empty
         for (Graph.Node node : board.getNodes()) {
             if (!node.getValue().isEmpty()) {
                 numFilledTiles++;
@@ -23,6 +21,7 @@ public class Heuristic {
         numFilledTiles = 100 - numFilledTiles;
 
         float numNonEmptyTiles = 0;
+        // Count the number of tiles that are not empty
         for (Graph.Node node : board.getNodes()) {
             if (!node.getValue().isEmpty()) {
                 numNonEmptyTiles++;
@@ -32,6 +31,7 @@ public class Heuristic {
         numNonEmptyTiles = -(numNonEmptyTiles * numNonEmptyTiles) + 40;
 
         float numAttackPiecesOnBoard = 0;
+        // Count the number of attack pieces on the board
         for (Graph.Node node : board.getNodes()) {
             if (!node.getValue().isEmpty()) {
                 numAttackPiecesOnBoard++;
@@ -44,6 +44,7 @@ public class Heuristic {
         numEmptyTiles = 100 - numFilledTiles;
 
         float numArrowPiecesOnBoard = 0;
+        // Count the number of arrow pieces on the board
         for (Graph.Node node : board.getNodes()) {
             if (node.getValue().isFire()) {
                 numArrowPiecesOnBoard++;;
@@ -57,7 +58,7 @@ public class Heuristic {
 
         float tiValue1 = 0;
         float tiValue2 = 0;
-
+// 
         for (Graph.Node node : board.getNodes()) {
             if (node.getValue().isEmpty()) {
                 continue;
@@ -68,30 +69,38 @@ public class Heuristic {
             
         }
 
-        double x1 = (numFilledTiles / weight) * tiValue1;
-        double x2 = (numNonEmptyTiles / weight) * C1_value(board);
-        double x3 = (numAttackPiecesOnBoard / weight) * C2_value(board);
-        double x4 = (numEmptyTiles / weight) * tiValue2;
-        double x5 = (numArrowPiecesOnBoard / weight);
-
-        return (float) (x1 + x2 + x3 + x4 + x5);
-    }
-
-    private static float calculate_TiValue(GameStateManager.Square playerSquare, int dist1, int dist2){
-    	float k_constant = 1/4f;
-
-       
-    
-        if(dist1 == Integer.MAX_VALUE && dist2 == Integer.MAX_VALUE) return 0;
-       
-        else if(dist1 == dist2) return playerSquare == GameStateManager.Square.WHITE ? k_constant : -k_constant;
+        double a1 = (numFilledTiles / weight) * tiValue1;
+        double a2 = (numNonEmptyTiles / weight) * calcC2_value(board);
+        double a3 = (numAttackPiecesOnBoard / weight) * calcC1_value(board);
+        double a4 = (numEmptyTiles / weight) * tiValue2;
+        double a5 = (numArrowPiecesOnBoard / weight);
         
-        else if(dist1 < dist2) return 1;
-       
-        else return -1;
+        return (float) (a1 + a2 + a3 + a4 + a5);
     }
+     
+    private static float calculate_TiValue(GameStateManager.Square playerSquare, int distance1, int distance2){
+    	float k_constant = 1/4f;
+        
+            switch (Integer.compare(distance1, distance2)) {
+                case 0:
+                    return playerSquare == GameStateManager.Square.WHITE ? k_constant : -k_constant;
+                case -1:
+                    return 1;
+                default:
+                    return -1;
+            }
+        
+    }
+    
+    private static float calcC1_value(Graph board){
+        float sum = 0;
+        for (Graph.Node n : board.getNodes()) {
+            sum += Math.min(1, Math.max(-1, ((n.getKdist2() - n.getKdist1()) / 6f)));
+        }
 
-    private static float C1_value(Graph board){
+        return sum;
+    }
+    private static float calcC2_value(Graph board){
     	float sum = 0;
         for (Graph.Node n : board.getNodes()) {
             float term1 = (float) Math.pow(2, -n.getQdist1());
@@ -101,14 +110,7 @@ public class Heuristic {
         return 2 * sum;
     }
 
-    private static float C2_value(Graph board){
-        float sum = 0;
-        for (Graph.Node n : board.getNodes()) {
-            sum += Math.min(1, Math.max(-1, ((n.getKdist2() - n.getKdist1()) / 6f)));
-        }
-
-        return sum;
-    }
+    
     
     }
     
