@@ -191,9 +191,9 @@ public class GameStateManager{
 		
 		// Clone the current board state and find the best move using alpha-beta pruning.
 		Graph clonedGraph = Graph.cloneGraph(currentBoardState);
-		Moves.Move optimalMove = SearchTree.performAlphaBeta(clonedGraph, ourPlayer, searchDepth);
+		Moves.Move optimalMove = SearchTree.findBestMoveUsingAlphaBeta(clonedGraph, ourPlayer, searchDepth);
 		if(optimalMove == null) {
-			optimalMove = SearchTree.performAlphaBeta(Graph.cloneGraph(currentBoardState), ourPlayer, 1);
+			optimalMove = SearchTree.findBestMoveUsingAlphaBeta(Graph.cloneGraph(currentBoardState), ourPlayer, 1);
 			return Collections.emptyMap();
 		}
 
