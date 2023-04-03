@@ -68,21 +68,25 @@ public class Graph {
         //Set current to empty
         initialNode.setNodeValue(GameStateManager.Square.EMPTY);
         //Enable edges for all connected nodes
-        toggleConnectedNodeEdges(initialNode, true);
+        connectOrDisconnectEdges(initialNode, true);
 
         //Set next to player
         newNode.setNodeValue(currentPlayer);
         //Disable edges for all connected nodes
-        toggleConnectedNodeEdges(newNode, false);
+        connectOrDisconnectEdges(newNode, false);
 
         //Set arrow to arrow
         arrowNode.setNodeValue(GameStateManager.Square.ARROW);
 
         //Disable edges for all connected nodes
-        toggleConnectedNodeEdges(arrowNode, false);
+        connectOrDisconnectEdges(arrowNode, false);
 
         //Refresh the distances for all nodes
-        updateDistances();
+        for(GraphNode nodes : nodeList){
+            nodes.initializeAllDistances();
+        } 
+        Distance.allDistances(this, GameStateManager.Square.WHITE);
+        Distance.allDistances(this, GameStateManager.Square.BLACK);
     }
 
     private void initializeGraph(int[][] board){
@@ -95,103 +99,95 @@ public class Graph {
             }
         }
 
-        //Connect nodes to their neighbors
-        for(int j = 0; j < h; j++){
-            for(int i = 0; i < w; i++){
-                int id = j * w + i;
+      //Connect nodes to their neighbors
+      for(int row = 0; row < h; row++){
+        for(int col = 0; col < w; col++){
+            int id = row * w + col;
+            GraphNode node = nodeList.get(id);
 
-                GraphNode node = nodeList.get(id);
-
-                //Connect north node
-                if(j - 1 >= 0){
-                    int north = id - w;
-                    GraphNode northNode = nodeList.get(north);
-                    addEdge(node, northNode,GraphEdge.Direction.TOP, northNode.getNodeValue().isEmpty());
-                }
-
-                //Connect northeast node
-                if(j - 1 >= 0 && i + 1 < w){
-                    int northEast = id - w + 1;
-                    GraphNode northEastNode = nodeList.get(northEast);
-                    addEdge(node, northEastNode, GraphEdge.Direction.TOP_RIGHT, northEastNode.getNodeValue().isEmpty());
-                }
-
-                //Connect east node
-                if(i + 1 < w){
-                    int east = id + 1;
-                    GraphNode eastNode = nodeList.get(east);
-                    addEdge(node, eastNode, GraphEdge.Direction.RIGHT, eastNode.getNodeValue().isEmpty());
-                }
-
-                //Connect southeast node
-                if(j + 1 < h && i + 1 < w){
-                    int southEast = id + w + 1;
-                    GraphNode southEastNode = nodeList.get(southEast);
-                    addEdge(node, southEastNode, GraphEdge.Direction.BOTTOM_RIGHT, southEastNode.getNodeValue().isEmpty());
-                }
-
-                //Connect south node
-                if(j + 1 < h){
-                    int south = id + w;
-                    GraphNode southNode = nodeList.get(south);
-                    addEdge(node, southNode, GraphEdge.Direction.BOTTOM, southNode.getNodeValue().isEmpty());
-                }
-
-                //Connect southwest node
-                if(j + 1 < h && i - 1 >= 0){
-                    int southWest = id + w - 1;
-                    GraphNode southWestNode = nodeList.get(southWest);
-                    addEdge(node, southWestNode, GraphEdge.Direction.BOTTOM_LEFT, southWestNode.getNodeValue().isEmpty());
-                }
-
-                //Connect west node
-                if(i - 1 >= 0){
-                    int west = id - 1;
-                    GraphNode westNode = nodeList.get(west);
-                    addEdge(node, westNode, GraphEdge.Direction.LEFT, westNode.getNodeValue().isEmpty());
-                }
-
-                //Connect northwest node
-                if(j - 1 >= 0 && i - 1 >= 0){
-                    int northWest = id - w - 1;
-                    GraphNode northWestNode = nodeList.get(northWest);
-                    addEdge(node, northWestNode, GraphEdge.Direction.TOP_LEFT, northWestNode.getNodeValue().isEmpty());
-                }
+            if(row - 1 >= 0){
+                int top = id - w;
+                GraphNode topNode = nodeList.get(top);
+                addEdgeToNeighbour(node, topNode,GraphEdge.Direction.TOP, topNode.getNodeValue().isEmpty());
             }
+
+            if(row + 1 < h){
+                int bottom = id + h;
+                GraphNode bottomNode = nodeList.get(bottom);
+                addEdgeToNeighbour(node, bottomNode, GraphEdge.Direction.BOTTOM, bottomNode.getNodeValue().isEmpty());
+            }
+
+            if(col + 1 < w){
+                int right = id + 1;
+                GraphNode rightNode = nodeList.get(right);
+                addEdgeToNeighbour(node, rightNode, GraphEdge.Direction.RIGHT, rightNode.getNodeValue().isEmpty());
+            }
+
+            if(col - 1 >= 0){
+                int left = id - 1;
+                GraphNode leftNode = nodeList.get(left);
+                addEdgeToNeighbour(node, leftNode, GraphEdge.Direction.LEFT, leftNode.getNodeValue().isEmpty());
+            }
+
+            if(row + 1 < h && col + 1 < w){
+                int bottomRight = id + w + 1;
+                GraphNode bottomRightNode = nodeList.get(bottomRight);
+                addEdgeToNeighbour(node, bottomRightNode, GraphEdge.Direction.BOTTOM_RIGHT, bottomRightNode.getNodeValue().isEmpty());
+            }
+
+            if(row + 1 < h && col - 1 >= 0){
+                int bottomLeft = id + w - 1;
+                GraphNode bottomLeftNode = nodeList.get(bottomLeft);
+                addEdgeToNeighbour(node, bottomLeftNode, GraphEdge.Direction.BOTTOM_LEFT, bottomLeftNode.getNodeValue().isEmpty());
+            }
+
+            if(row - 1 >= 0 && col + 1 < w){
+                int topRight = id - w + 1;
+                GraphNode topRightNode = nodeList.get(topRight);
+                addEdgeToNeighbour(node, topRightNode, GraphEdge.Direction.TOP_RIGHT, topRightNode.getNodeValue().isEmpty());
+            }
+
+            if(row - 1 >= 0 && col - 1 >= 0){
+                int topLeft = id - w - 1;
+                GraphNode topLeftNode = nodeList.get(topLeft);
+                addEdgeToNeighbour(node, topLeftNode, GraphEdge.Direction.TOP_LEFT, topLeftNode.getNodeValue().isEmpty());
+            }
+            
         }
-
-        updateDistances();
-
+    }
     }
 
-   
-    private void addEdge(GraphNode n1, GraphNode n2, GraphEdge.Direction direction, boolean enabled){
-        if(n1.getAllEdges().size() == 8){
+    private void connectOrDisconnectEdges(GraphNode node, boolean toggle) {
+        for (GraphEdge forwardEdge : node.getAllEdges())
+            for (GraphEdge backwardEdge : forwardEdge.getTargetNode().getAllEdges())
+                if (backwardEdge.getTargetNode() == node){
+                    backwardEdge.setEdgeExists(toggle);
+                }
+                    
+    }
+
+
+    private void addEdgeToNeighbour(GraphNode startNode, GraphNode neighbourNode, GraphEdge.Direction direction, boolean exists){
+        if(startNode.getAllEdges().size() == 8){
             return;
         }
-        n1.getAllEdges().add(new GraphEdge(n2, direction, enabled));
+        GraphEdge newEdge = new GraphEdge(neighbourNode, direction, exists);
+        startNode.getAllEdges().add(newEdge);
     }
-
-    private void toggleConnectedNodeEdges(GraphNode n, boolean toggle) {
-        for (GraphEdge e : n.getAllEdges())
-            for (GraphEdge e2 : e.getTargetNode().getAllEdges())
-                if (e2.getTargetNode() == n)
-                    e2.setEdgeExists(toggle);
-    }
-
-    private void updateDistances(){
-        for(GraphNode n : nodeList) n.initializeAllDistances();
-        Distance.allDistances(this, GameStateManager.Square.WHITE);
-        Distance.allDistances(this, GameStateManager.Square.BLACK);
-    }
-
 
     @Override
     public boolean equals(Object o){
-        if(!(o instanceof Graph g)) return false;
-        if(nodeList.size() != g.nodeList.size()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Graph graph = (Graph) o;
+        if(nodeList.size() != graph.nodeList.size()) {
+            return false;
+        }
         for(int i = 0; i < nodeList.size(); i++){
-            if(!nodeList.get(i).equals(g.getAllGraphNodes().get(i))) return false;
+            if(!nodeList.get(i).equals(graph.getAllGraphNodes().get(i))) {
+                return false;
+            }
         }
         return true;
     }
