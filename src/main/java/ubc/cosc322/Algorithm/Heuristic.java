@@ -1,7 +1,7 @@
 package ubc.cosc322.Algorithm;
-
 import ubc.cosc322.Graph.*;
 import ubc.cosc322.GameStateManager;
+import ubc.cosc322.GameStateManager.Square;
 
 public class Heuristic {
 
@@ -9,83 +9,92 @@ public class Heuristic {
 
     }
 
-    public static float calculateT(Graph board, GameStateManager.Square turn){
-       
-    	float f1 = 0;                             //calculates the number of filled tiles
-        for(GraphNode n : board.getAllGraphNodes()) {
-            if(!n.getNodeValue().isEmpty()) {
-                f1++;
+    public static float calculateHeuristicValue(Graph board, Square player) {
+        float numFilledTiles = 0; 
+        for (GraphNode node : board.getAllGraphNodes()) {
+            if (!node.getNodeValue().isEmpty()) {
+                numFilledTiles++;
             }
         }
-        f1 = 100 - f1;
-        
-        
-        float f2 = 0;
-        for (GraphNode n : board.getAllGraphNodes()) {
-            if (n.getNodeValue().isEmpty()) {
-                continue;
-            }
+        numFilledTiles = 100 - numFilledTiles;
 
-            int qDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getQueenDistanceWhite() : n.getQueenDistanceBlack();
-            int kDist = (n.getNodeValue() == GameStateManager.Square.WHITE) ? n.getKingDistanceWhite() : n.getKingDistanceBlack();
-
-            f2 += Math.pow(qDist, 2) - Math.pow(kDist, 2);
-        }
-        
-        
-        float f3 = 0;                              
-        for (GraphNode n : board.getAllGraphNodes()) {
-            if (!n.getNodeValue().isEmpty()) {
-                f3++;
+        float numNonEmptyTiles = 0;
+        for (GraphNode node : board.getAllGraphNodes()) {
+            if (!node.getNodeValue().isEmpty()) {
+                numNonEmptyTiles++;
             }
         }
-        f3 = (f3 - 60) / 10;
-        f3 = -(f3 * f3) + 40;
+        numNonEmptyTiles = (numNonEmptyTiles - 30) / 10;
+        numNonEmptyTiles = -(numNonEmptyTiles * numNonEmptyTiles) + 40;
 
-        
-        float f4 = 0;                              //calculates the number of empty tiles
-        f4 = 100 - f1;
-        
+        float numAttackPiecesOnBoard = 0;
+        for (GraphNode node : board.getAllGraphNodes()) {
+            if (!node.getNodeValue().isEmpty()) {
+                numAttackPiecesOnBoard++;
+            }
+        }
+        numAttackPiecesOnBoard = (float) ((numAttackPiecesOnBoard - 40));
+        numAttackPiecesOnBoard = -(numAttackPiecesOnBoard * numAttackPiecesOnBoard) + 20;
 
-        double weight = Math.sqrt(f1*f1 + f2*f2 + f3*f3 + f4*f4);
+        float numEmptyTiles = 0;
+        numEmptyTiles = 100 - numFilledTiles;
 
-        float t1 = 0;
-        float t2 = 0;
+        float numArrowPiecesOnBoard = 0;
+        for (GraphNode node : board.getAllGraphNodes()) {
+            if (node.getNodeValue().isArrow()) {
+                numArrowPiecesOnBoard++;;
+            }
+        }
+        numArrowPiecesOnBoard = (numArrowPiecesOnBoard - 20) / 10;
+        numArrowPiecesOnBoard = (numArrowPiecesOnBoard * numArrowPiecesOnBoard) + 40;
 
-        for (GraphNode n : board.getAllGraphNodes()) {
-            if (n.getNodeValue().isEmpty()) {
+        double weight = Math.sqrt(numFilledTiles * numFilledTiles + numNonEmptyTiles * numNonEmptyTiles +
+                numAttackPiecesOnBoard * numAttackPiecesOnBoard + numEmptyTiles * numEmptyTiles + numArrowPiecesOnBoard * numArrowPiecesOnBoard);
+
+        float tiValue1 = 0;
+        float tiValue2 = 0;
+
+        for (GraphNode node : board.getAllGraphNodes()) {
+            if (node.getNodeValue().isEmpty()) {
                 continue;
             }
             
-            t1 += Ti_value(turn, n.getQueenDistanceWhite(), n.getQueenDistanceBlack());
-            t2 += Ti_value(turn, n.getKingDistanceWhite(), n.getKingDistanceBlack());
+            tiValue1 += calculate_TiValue(player, node.getQueenDistanceWhite(), node.getQueenDistanceBlack());
+            tiValue2 += calculate_TiValue(player, node.getKingDistanceWhite(), node.getKingDistanceBlack());
             
         }
 
-        double x1 = (f1/weight) * t1;
-        double x2 = (f2/weight) * C1_value(board);
-        double x3 = (f3/weight) * C2_value(board);
-        double x4 = (f4/weight) * t2;
+        double a1 = (numFilledTiles / weight) * tiValue1;
+        double a2 = (numNonEmptyTiles / weight) * calcC2_value(board);
+        double a3 = (numAttackPiecesOnBoard / weight) * calcC1_value(board);
+        double a4 = (numEmptyTiles / weight) * tiValue2;
+        double a5 = (numArrowPiecesOnBoard / weight);
 
-        return (float) (x1 + x2 + x3 + x4);
+        return (float) (a1 + a2 + a3 + a4 + a5);
     }
 
-    private static float Ti_value(GameStateManager.Square player, int dist1, int dist2){
-    	float k = 1/5f;
-
-        if(dist1 == Integer.MAX_VALUE && dist2 == Integer.MAX_VALUE) 
-            return 0;
-        else if(dist1 == dist2) {
-            if (player ==  GameStateManager.Square.BLACK)
-                return -k;
-            else
-                return k;  
-        }  
-        else 
-            return dist1 < dist2 ? 1 : -1;
+    private static float calculate_TiValue(GameStateManager.Square playerSquare, int distance1, int distance2){
+    	float k_constant = 1/4f;
+        
+            switch (Integer.compare(distance1, distance2)) {
+                case 0:
+                    return playerSquare == GameStateManager.Square.WHITE ? k_constant : -k_constant;
+                case -1:
+                    return 1;
+                default:
+                    return -1;
+            }
+        
     }
+    private static float calcC1_value(Graph board){
+        float sum = 0;
+        for (GraphNode n : board.getAllGraphNodes()) {
+            sum += Math.min(1, Math.max(-1, ((n.getKingDistanceBlack() - n.getKingDistanceWhite()) / 6f)));
+        }
 
-    private static float C1_value(Graph board){
+        return sum;
+    }
+    private static float calcC2_value(Graph board){
     	float sum = 0;
         for (GraphNode n : board.getAllGraphNodes()) {
             float term1 = (float) Math.pow(2, -n.getQueenDistanceWhite());
@@ -95,14 +104,6 @@ public class Heuristic {
         return 2 * sum;
     }
 
-    private static float C2_value(Graph board){
-        float sum = 0;
-        for (GraphNode n : board.getAllGraphNodes()) {
-            sum += Math.min(1, Math.max(-1, ((n.getKingDistanceBlack() - n.getKingDistanceWhite()) / 6f)));
-        }
-
-        return sum;
+    
+    
     }
-
-
-}

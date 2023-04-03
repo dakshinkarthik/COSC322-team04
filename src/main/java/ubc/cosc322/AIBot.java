@@ -14,29 +14,31 @@ import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
  */
 public class AIBot extends GamePlayer{
 
-	private final Logger logger;
-
     private GameClient gameClient = null; 
     private BaseGameGUI gameGui = null;
 	private final GameStateManager RosieManager;
 
     private String userName = null;
     private String passwd = null;
+    private final Logger logger;
  
-	
     /**
      * The main method
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {				 
-    	AIBot bot = new AIBot(args[0], args[1]);
+    	AIBot agent = new AIBot(args[0], args[1]);
     	
-    	if(bot.getGameGUI() == null) {
-    		bot.Go();
+    	if(agent.getGameGUI() == null) {
+    		agent.Go();
     	}
     	else {
     		BaseGameGUI.sys_setup();
-            java.awt.EventQueue.invokeLater(bot::Go);
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                	agent.Go();
+                }
+            });
     	}
     }
 	
@@ -45,90 +47,89 @@ public class AIBot extends GamePlayer{
      * @param userName
       * @param passwd
      */
-    public AIBot(String userName, String passwd) {
+    
+  public AIBot(String userName, String passwd) {
+	this.userName = userName;
+	this.passwd = passwd;
 
-		logger = Logger.getLogger(GameStateManager.class.toString());
-
-		this.userName = userName;
-    	this.passwd = passwd;
-    	
-    	//To make a GUI-based player, create an instance of BaseGameGUI
-    	//and implement the method getGameGUI() accordingly
-    	this.gameGui = new BaseGameGUI(this);
-
-		//Initialize GameStateManager
-		this.RosieManager = new GameStateManager();
-    }
- 
-
+	logger = Logger.getLogger(GameStateManager.class.toString());
+	this.gameGui = new BaseGameGUI(this);
+	this.RosieManager = new GameStateManager();
+}
 
     @Override
     public void onLogin() {
-		logger.info("Login Successful.");
-
+    	logger.info("Congratualations!!! I am called because the server indicated that the login is successfully! The next step is to find a room and join it: "
+    			+ "the gameClient instance created in my constructor knows how!");
 		userName = getGameClient().getUserName();
 		if(gameGui != null){
 			gameGui.setRoomInformation(gameClient.getRoomList());
 		}
     }
-
+    /**
+    This method is used to handle the game messages received by the client.
+    It takes in the messageType and msgDetails as input parameters and processes
+    them accordingly. 
+    @param messageType The type of game message received by the client.
+    @param msgDetails The details of the game message received by the client.
+    @return true if the game message was handled successfully, false otherwise.
+    */
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
-		switch (messageType) {
-			case GameMessage.GAME_STATE_BOARD -> gameGui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
-			case GameMessage.GAME_ACTION_MOVE ->  {
-				//Update our GUI to reflect opponents move
-				gameGui.updateGameState(msgDetails);
+    	//If the messageType is GAME_STATE_BOARD, the gameGui's gameState is updated.
+    	if (messageType.equals(GameMessage.GAME_STATE_BOARD)) {
+    		gameGui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+    	}
+    	// If it is GAME_ACTION_MOVE, the gameGui is updated, RosieManager's opponentPlayerMove is called
+        //and the client's move is made using findOurBestMove().
+    	else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
+    		gameGui.updateGameState(msgDetails);
+    		RosieManager.opponentPlayerMove(msgDetails);
+			Map<String, Object> actions = RosieManager.findOurBestMove();
 
-				//Update GameStateManager board state
-				RosieManager.opponentPlayerMove(msgDetails);
+			if(actions.isEmpty()){
+				logger.severe("This is the end of the road for us. We have lost :(");
+			}else {
+				gameGui.updateGameState(actions);
+				gameClient.sendMoveMessage(actions);
 
-				//Make our move
-				move();
-
+				logger.info("Played our move. Waiting to watch the opponent be ridiculed...");
 			}
-			case GameMessage.GAME_ACTION_START -> {
+    	}
+    	//If the messageType is GAME_ACTION_START, the first player is determined
+    	//and if the current user is playing as black pieces,their move is made using findOurBestMove().
+    	else if (messageType.equals(GameMessage.GAME_ACTION_START)) {
+    		String firstPlayer = (String) msgDetails.get(AmazonsGameMessage.PLAYER_BLACK);
+			if(!firstPlayer.equalsIgnoreCase(userName)){
 
-				//Make a move if the bot starts as white
-				String black = (String) msgDetails.get(AmazonsGameMessage.PLAYER_BLACK);
-				if(black.equalsIgnoreCase(userName)){
+				//RosieManager sets the players to white pieces.
+				logger.info("Playing as white pieces.");
+				RosieManager.setPlayers(GameStateManager.Square.WHITE);
 
-					logger.info("Playing as black.");
-					RosieManager.setPlayers(GameStateManager.Square.BLACK);
+			} else {
+				//Otherwise, RosieManager sets the players to black pieces.
+				logger.info("Playing as black pieces.");
+				RosieManager.setPlayers(GameStateManager.Square.BLACK);
 
-					//Make our move
-					move();
+				Map<String, Object> actions = RosieManager.findOurBestMove();
 
+				if(actions.isEmpty()){
+					logger.severe("This is the end of the road for us. We have lost :(");
+				}else {
+					gameGui.updateGameState(actions);
+					gameClient.sendMoveMessage(actions);
 
-				} else {
-					logger.info("Playing as white.");
-					RosieManager.setPlayers(GameStateManager.Square.WHITE);
+					logger.info("Played our move. Waiting to watch the opponent be ridiculed...");
 				}
 			}
-			default -> {
-				String msg = "Unhandled Message Type occurred: " + messageType;
-				logger.warning(msg);
-			}
-		}
-
+    	} else {
+    		//If the messageType is not recognized, a warning message is logged.
+    		String warningMessage = "Unhandled Message: " + messageType;
+			logger.warning(warningMessage);
+    	}
     	return true;
     }
     
-    private void move(){
-		Map<String, Object> moveDetails = RosieManager.findOurBestMove();
-
-		if(!moveDetails.isEmpty()){
-			gameGui.updateGameState(moveDetails);
-			gameClient.sendMoveMessage(moveDetails);
-
-			logger.info("Made our move. Waiting on opponent.");
-
-		}else {
-			logger.severe("No move found. We've lost.");
-		}
-	}
-
-
     @Override
     public String userName() {
     	return userName;
@@ -150,4 +151,5 @@ public class AIBot extends GamePlayer{
 	}
 
  
-}//end of class
+}
+

@@ -178,7 +178,7 @@ public class Graph {
             return;
         }
         GraphEdge newEdge = new GraphEdge(neighbourNode, direction, exists);
-        neighbourNode.getAllEdges().add(newEdge);
+        startNode.getAllEdges().add(newEdge);
     }
 
     @Override
@@ -195,6 +195,7 @@ public class Graph {
                 return false;
             }
         }
+        
         return true;
     }
 

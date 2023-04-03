@@ -39,7 +39,7 @@ public class SearchTree {
     private static AlphaBetaResult alphaBetaPruning(Graph graph, int searchLevel, float alpha, float beta, Square currentPlayer, Moves.Move prevMove) {
     	// If the search depth has reached zero, return the heuristic value of the current state
     	if (searchLevel == 0)
-            return new AlphaBetaResult(prevMove, Heuristic.calculateT(graph, currentPlayer));
+            return new AlphaBetaResult(prevMove, Heuristic.calculateHeuristicValue(graph, currentPlayer));
 
         float optimalValue = (currentPlayer.isWhite() ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY);
         Moves.Move optimalMove = null;
