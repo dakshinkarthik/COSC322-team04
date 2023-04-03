@@ -76,7 +76,7 @@ public class GraphNode {
 
 
     public void setNodeValue(GameStateManager.Square value) {
-        if(value.isFire()) {
+        if(value.isArrow()) {
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
             setQueenDistanceWhite(0);

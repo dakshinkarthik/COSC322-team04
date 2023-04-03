@@ -249,7 +249,7 @@ public class GameStateManager{
 			}
 		}
 	
-		public boolean isFire() {
+		public boolean isArrow() {
 			if(this == ARROW){
 				return true;
 			} else {

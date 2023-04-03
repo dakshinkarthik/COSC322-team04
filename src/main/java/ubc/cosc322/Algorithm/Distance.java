@@ -56,7 +56,7 @@ public class Distance {
         	GraphNode node = nl.get(i);
             GameStateManager.Square tile = node.getNodeValue();
             //Skip fire nodes
-            if (tile.isFire()) {
+            if (tile.isArrow()) {
                 continue;
             }
             //Add all non-player nodes to unvisited set
