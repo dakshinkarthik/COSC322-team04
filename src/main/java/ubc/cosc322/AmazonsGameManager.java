@@ -1,15 +1,15 @@
 package ubc.cosc322;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
-import ubc.cosc322.Graph.Moves;
-import ubc.cosc322.Algorithm.SearchTree;
+import ubc.cosc322.Graph.MovesGenerator;
+import ubc.cosc322.Algorithm.MinimaxSearch;
 import ubc.cosc322.Graph.Graph;
 import java.util.*;
 import java.util.logging.Logger;
 
 
-public class GameStateManager{
+public class AmazonsGameManager{
 
-	private static final int THRESHOLD = 250000;	//ME: try different values
+	private static final int THRESHOLD = 200000;	//ME: try different values
 	private static final int DIM = 10;
 	private static final int[][] BOARD_STATE_BEGINNING = {
 
@@ -29,7 +29,7 @@ public class GameStateManager{
 	private Square opponentPlayer;
 	private final Logger logger;
 	private Graph currentBoardState;
-	private Map<Moves.Move, Graph> legalMovesMap;
+	private Map<MovesGenerator.Move, Graph> legalMovesMap;
 
 	// This method returns the beginning state of the board as a 2D integer array.
 	public static int[][] getBoardSetup(){
@@ -38,8 +38,8 @@ public class GameStateManager{
 
 	// This is a constructor of GameStateManager class which initializes the logger,
 	// creates the currentBoardState object from the initial state, and initializes legalMovesMap.
-	public GameStateManager(){
-		logger = Logger.getLogger(GameStateManager.class.toString());
+	public AmazonsGameManager(){
+		logger = Logger.getLogger(AmazonsGameManager.class.toString());
 		int[][] initialState = getBoardSetup();
 		currentBoardState = new Graph(initialState);
 		legalMovesMap = new HashMap<>();
@@ -105,7 +105,7 @@ public class GameStateManager{
 	@return the new index of the queen on the game board
 	*/
 	public static int getQueenNewIndexFromCoord (Map<String, Object> msgDetails) {
-		ArrayList<Integer> newPosition = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
+		ArrayList<Integer> newPosition =  (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
 		int row = DIM-newPosition.get(0);
 		int col = newPosition.get(1)-1;
 		int index = row*DIM + col;
@@ -122,14 +122,11 @@ public class GameStateManager{
 		int newIndex = getQueenNewIndexFromCoord(opponentMove);
 		int arrowIndex = getArrowIndexFromCoord(opponentMove);
 		// Create a new move object.
-		Moves.Move turn = new Moves.Move(initialIndex, newIndex, arrowIndex);
-		
-//		Moves m = new Moves();
-//		Moves.Move turn = m.new Move(initialIndex, newIndex, arrowIndex);
+		MovesGenerator.Move turn = new MovesGenerator.Move(initialIndex, newIndex, arrowIndex);
 		
 		
 		// Get all the possible legal moves for the current player.
-		legalMovesMap = Moves.possMoves(currentBoardState, opponentPlayer);
+		legalMovesMap = MovesGenerator.possibleMoves(currentBoardState, opponentPlayer);
 		// If the opponent's move is not in the legal moves map, log an error message.
 		if(!legalMovesMap.containsKey(turn)){
 			String opponentColor = ""; 
@@ -155,15 +152,15 @@ public class GameStateManager{
 	@return A map containing details of the move made, including the current and next positions of the queen,
 	    the position of the arrow, and the updated legal moves for the opponent.
 	**/
-	public Map<String, Object> updateBoardState(Moves.Move move){
+	public Map<String, Object> updateBoardState(MovesGenerator.Move move){
 		Map<String, Object> moveDetails = new HashMap<>();
-		moveDetails.put(AmazonsGameMessage.QUEEN_POS_CURR, getCoordinates(move.current_Index()));
-		moveDetails.put(AmazonsGameMessage.QUEEN_POS_NEXT, getCoordinates(move.next_Index()));
-		moveDetails.put(AmazonsGameMessage.ARROW_POS, getCoordinates(move.arrow_Index()));
+		moveDetails.put(AmazonsGameMessage.QUEEN_POS_CURR, getCoordinates(move.currentIndex()));
+		moveDetails.put(AmazonsGameMessage.QUEEN_POS_NEXT, getCoordinates(move.nextIndex()));
+		moveDetails.put(AmazonsGameMessage.ARROW_POS, getCoordinates(move.arrowIndex()));
 		// Update the current board state with the move.
 		currentBoardState = legalMovesMap.get(move);
 		// Update the legalMovesMap with all possible moves for the opponent.
-		legalMovesMap = Moves.possMoves(currentBoardState, opponentPlayer);
+		legalMovesMap = MovesGenerator.possibleMoves(currentBoardState, opponentPlayer);
 		if(legalMovesMap.isEmpty()){
 			logger.info("Opponent is left with no moves. Victory is ours, let it sink in!");
 		}
@@ -178,7 +175,7 @@ public class GameStateManager{
 	*/
 	public Map<String, Object> findOurBestMove() {
 
-		legalMovesMap = Moves.possMoves(currentBoardState, ourPlayer);
+		legalMovesMap = MovesGenerator.possibleMoves(currentBoardState, ourPlayer);
 
 		// Determine the search depth based on the size of the legalMovesMap.
 		int searchDepth = 1;
@@ -191,9 +188,9 @@ public class GameStateManager{
 		
 		// Clone the current board state and find the best move using alpha-beta pruning.
 		Graph clonedGraph = Graph.cloneGraph(currentBoardState);
-		Moves.Move optimalMove = SearchTree.findBestMoveUsingAlphaBeta(clonedGraph, ourPlayer, searchDepth);
+		MovesGenerator.Move optimalMove = MinimaxSearch.findBestMoveUsingAlphaBeta(clonedGraph, ourPlayer, searchDepth);
 		if(optimalMove == null) {
-			optimalMove = SearchTree.findBestMoveUsingAlphaBeta(Graph.cloneGraph(currentBoardState), ourPlayer, 1);
+			optimalMove = MinimaxSearch.findBestMoveUsingAlphaBeta(Graph.cloneGraph(currentBoardState), ourPlayer, 1);
 			return Collections.emptyMap();
 		}
 

@@ -1,17 +1,13 @@
 package ubc.cosc322.Algorithm;
 
-
 import java.util.Map;
 import ubc.cosc322.Graph.*;
-import ubc.cosc322.GameStateManager.Square;
+import ubc.cosc322.AmazonsGameManager.Square;
 
-public class SearchTree {
+public class MinimaxSearch {
 
-    private SearchTree() {
-
-    }
  // This class is used to store the result of alpha-beta pruning
-    public record AlphaBetaResult(Moves.Move move, float heuristic) { }
+    public record AlphaBetaResult(MovesGenerator.Move move, float heuristic) { }
     
     /**
     This method uses the alpha-beta pruning algorithm to find the best possible move for the given player
@@ -21,7 +17,7 @@ public class SearchTree {
     @param depth the depth of the game tree to search
     @return the best move found using alpha-beta pruning algorithm
     */
-    public static Moves.Move findBestMoveUsingAlphaBeta(Graph graph, Square currentPlayer, int depth) {
+    public static MovesGenerator.Move findBestMoveUsingAlphaBeta(Graph graph, Square currentPlayer, int depth) {
     	AlphaBetaResult bestAlphaBetaMove = alphaBetaPruning(graph, depth, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, currentPlayer, null);
         return bestAlphaBetaMove.move;
     }
@@ -36,16 +32,16 @@ public class SearchTree {
     @param prevMove the previous move made in the game
     @return an AlphaBetaResult object containing the optimal move and its corresponding score
     */
-    private static AlphaBetaResult alphaBetaPruning(Graph graph, int searchLevel, float alpha, float beta, Square currentPlayer, Moves.Move prevMove) {
+    private static AlphaBetaResult alphaBetaPruning(Graph graph, int searchLevel, float alpha, float beta, Square currentPlayer, MovesGenerator.Move prevMove) {
     	// If the search depth has reached zero, return the heuristic value of the current state
     	if (searchLevel == 0)
-            return new AlphaBetaResult(prevMove, Heuristic.calculateT(graph, currentPlayer));
+            return new AlphaBetaResult(prevMove, AmazonsDistanceHeuristic.Heuristic.calculateHeuristicValue(graph, currentPlayer));
 
         float optimalValue = (currentPlayer.isWhite() ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY);
-        Moves.Move optimalMove = null;
+        MovesGenerator.Move optimalMove = null;
 
      // Iterate over all possible moves for the current player and calculate their scores
-        	for (Map.Entry<Moves.Move, Graph> action : Moves.possMoves(graph, currentPlayer).entrySet()) {
+        	for (Map.Entry<MovesGenerator.Move, Graph> action : MovesGenerator.possibleMoves(graph, currentPlayer).entrySet()) {
                 float optimalScore = alphaBetaPruning(action.getValue(), searchLevel - 1, alpha, beta, Square.BLACK, action.getKey()).heuristic;
              // If the current score is better than the current optimal score, update the optimal score and move
                 if ((currentPlayer.isWhite() && optimalScore > optimalValue) ||

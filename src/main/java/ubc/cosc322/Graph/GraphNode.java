@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import ubc.cosc322.GameStateManager;
+import ubc.cosc322.AmazonsGameManager;
 
 public class GraphNode {
 
@@ -14,19 +14,23 @@ public class GraphNode {
     private int kingDistanceBlack;
     private int queenDistanceWhite;
     private int queenDistanceBlack;
-    private GameStateManager.Square squareValue;
+    private AmazonsGameManager.Square squareValue;
 
-    
 
-    public GraphNode(int id, GameStateManager.Square value){
+    /**
+    Initializes a new instance of the GraphNode class with the specified id and value.
+    @param id the unique identifier of the graph node
+    @param value the value of the graph node
+    */
+    public GraphNode(int id, AmazonsGameManager.Square value){
         this.id = id;
         edgeList = new ArrayList<>();
         setNodeValue(value);
         initializeAllDistances();
     }
 
-
-     //initializes all distances to infinity (max value of int)
+    //This function initializes all distances of a GraphNode to infinity (maximum value of int). 
+    //It sets the queen and king distances to infinity for both black and white players.
      public void initializeAllDistances(){
         setQueenDistanceWhite(Integer.MAX_VALUE);
         setQueenDistanceBlack(Integer.MAX_VALUE);
@@ -35,10 +39,10 @@ public class GraphNode {
     }
 
 
-    /**
-     * Creates an identical deep copy of the source node
-     * @param original
-     * @return a copy of the source node
+     /**
+     Creates a deep copy of the provided GraphNode object.
+     @param original the GraphNode object to be copied
+     @return a new GraphNode object with the same attributes as the original object
      */
     public static GraphNode cloneNode(GraphNode original){
         GraphNode clone = new GraphNode(original.id, original.squareValue);
@@ -49,18 +53,28 @@ public class GraphNode {
         return clone;
     }
 
-    
-    public void setPlayerDistancesZero(GameStateManager.Square player){
+    /**
+    Sets the distances of a player's queen and king to zero.
+    @param player the player whose distances are being set to zero
+    */
+    public void setPlayerDistancesZero(AmazonsGameManager.Square player){
+    	//If the player is black, the distances of the black queen and king are set to zero.
         if(player.isBlack()){
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
-        }else {
+        }
+      //If the player is white, the distances of the white queen and king are set to zero.
+        else {        
             setQueenDistanceWhite(0);
             setKingDistanceWhite(0);
         }
     }
 
-    
+    /**
+    Returns an existing edge with the given direction from the edge list, or null if it does not exist.
+    @param direction the direction of the desired edge
+    @return the existing edge with the given direction, or null if it does not exist
+    */
     public GraphEdge getExistingEdge(GraphEdge.Direction direction){
         for(GraphEdge edge : edgeList){
 
@@ -74,8 +88,13 @@ public class GraphNode {
         return null;
     }
 
-
-    public void setNodeValue(GameStateManager.Square value) {
+    /**
+    Sets the node value to the given square value. 
+    @param value the square value to set
+    */
+    public void setNodeValue(AmazonsGameManager.Square value) {
+    	//If the square value is an arrow,
+        //then sets the distances to the queen and king for both black and white players to 0.
         if(value.isArrow()) {
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
@@ -85,6 +104,12 @@ public class GraphNode {
         this.squareValue = value;
     }
 
+    /**
+    Returns the available edge in the given direction or the edge that leads back to the starting node if it exists.
+    @param start the starting node
+    @param direction the direction of the desired edge
+    @return the available edge in the given direction or the edge that leads back to the starting node if it exists, or null if no such edge exists
+    */
     public GraphEdge getAvailableOrStartEdge(GraphNode start, GraphEdge.Direction direction){
         for(GraphEdge edge : edgeList){
             if(edge.getEdgeDirection() != direction) {
@@ -101,7 +126,7 @@ public class GraphNode {
         return id; 
     }
 
-    public GameStateManager.Square getNodeValue() {
+    public AmazonsGameManager.Square getNodeValue() {
         return squareValue;
     }
 
@@ -143,13 +168,17 @@ public class GraphNode {
     }
 
    
-
+    /**
+    Checks if this GraphNode is equal to another object.
+    @param o the object to compare
+    @return true if the object is equal to this GraphNode, false otherwise
+    */
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        GraphNode n = (GraphNode) o;
-        if(id==n.id && squareValue==n.squareValue) {
+        GraphNode node = (GraphNode) o;
+        if(id==node.id && squareValue==node.squareValue) {
             return true;
         }
         return false;
