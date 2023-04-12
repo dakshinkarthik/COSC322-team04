@@ -54,16 +54,16 @@ public class GraphNode {
     }
 
     /**
-    Sets the distances of a player's queen and king to zero.
+    Sets the king and queen distances of a player to zero.
     @param player the player whose distances are being set to zero
     */
     public void setPlayerDistancesZero(AmazonsGameManager.Square player){
-    	//If the player is black, the distances of the black queen and king are set to zero.
+    	//If the player is black, the king and queen distances of the black player are set to zero.
         if(player.isBlack()){
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
         }
-      //If the player is white, the distances of the white queen and king are set to zero.
+      //If the player is white, the king and queen distances of the white player are set to zero.
         else {        
             setQueenDistanceWhite(0);
             setKingDistanceWhite(0);
@@ -94,7 +94,7 @@ public class GraphNode {
     */
     public void setNodeValue(AmazonsGameManager.Square value) {
     	//If the square value is an arrow,
-        //then sets the distances to the queen and king for both black and white players to 0.
+        //then sets the king and queen distances for both black and white players to 0.
         if(value.isArrow()) {
             setQueenDistanceBlack(0);
             setKingDistanceBlack(0);  
