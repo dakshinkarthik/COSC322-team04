@@ -13,27 +13,18 @@ public class AmazonsDistanceHeuristic {
         public static float calculateHeuristicValue(Graph board, Square player){
         
 
-            float territoryScore = territoryHeuristic(board);
-            float mobilityScore = mobilityHeuristic(board);
+            float territoryScore = territoryWeight(board);
+            float outsideInfluenceScore = outsideInfluenceWeight(board);
            // float transitionScore1 = transistionHeuristic1(board);
-            float gameStartScore = gameStartHeuristic(board);
-            float clusteringScore = clusteringHeuristic(board);
+            float reachableSquareScore = reachableSquareWeight(board);
+            float mobilityScore = mobilityWeight(board);
+            float clusteringScore = clusteringWeight(board);
             float attackingPotentialScore = attackingPotentialHeuristic(board);
             float attackingPotential1Score = attackingPotential1Heuristic(board);
 
-            // Add a weight to control the importance of the clustering heuristic
-            float clusteringWeight = 1f;
-            clusteringScore = clusteringWeight * clusteringScore;
-            
-            // Add a weight to control the importance of the attacking potential heuristic
-            float attackingPotentialWeight = 1f;
-            attackingPotentialScore = attackingPotentialWeight * attackingPotentialScore;
 
-            // Add a weight to control the importance of the attacking potential heuristic
-            float attackingPotential1Weight = 0.5f;
-            attackingPotential1Score = attackingPotential1Weight * attackingPotentialScore;
-
-            double weight = Math.sqrt(Math.pow(territoryScore,2) + Math.pow(mobilityScore,2)+gameStartScore*gameStartScore + Math.pow(attackingPotential1Score,2) + Math.pow(clusteringScore,2));
+            double weight = Math.sqrt(Math.pow(territoryScore,2) + Math.pow(outsideInfluenceScore,2)
+            +reachableSquareScore*reachableSquareScore + Math.pow(mobilityScore,2) + Math.pow(clusteringScore,2));
 
             float t1 = 0;
             float t2 = 0;
@@ -52,13 +43,13 @@ public class AmazonsDistanceHeuristic {
             float c2 = C2_value(board);
 
             double heuristic1 = (territoryScore/weight) * t1;
-            double heuristic2 = (mobilityScore/weight) * c1;
-           // double heuristic3 = (transitionScore1/weight) * c2;
-            double heuristic4 = (gameStartScore/weight) * t2;
-            double heuristic5 = (clusteringScore/weight) * t1;
-            double heuristic6 = (attackingPotential1Score/weight) * t2;
+            double heuristic2 = (outsideInfluenceScore/weight) * c1;
+            double heuristic3 = (reachableSquareScore/weight) * c2;
+            double heuristic4 = (mobilityScore/weight) * t2;
+            double heuristic5 = (clusteringScore/weight) * t2;
+            // double heuristic6 = (attackingPotential1Score/weight) * t1;
       
-            return (float) (heuristic1 + heuristic2 + heuristic4 + heuristic5 + heuristic6);
+            return (float) (heuristic1 + heuristic2 + heuristic4 + heuristic3 + heuristic5);
         }
 
         private static float Ti_value(Square player, int dist1, int dist2){
@@ -75,7 +66,7 @@ public class AmazonsDistanceHeuristic {
             else 
                 return dist1 < dist2 ? 1 : -1;
         }
-    private static float C1_value(Graph board){
+        private static float C1_value(Graph board){
             float sum = 0;
             for (GraphNode n : board.getAllGraphNodes()) {
                 float term1 = (float) Math.pow(2, -n.getQueenDistanceWhite());
@@ -100,34 +91,34 @@ public class AmazonsDistanceHeuristic {
          * @param board The current board state
          * @return Returns a heursitic based on the number of empty nodes
          */
-        private static float territoryHeuristic(Graph board){
+        private static float territoryWeight(Graph board){
 
-        float score = 0;                             //calculates the number of filled tiles
+        float weight = 0;                             //calculates the number of filled tiles
         for(GraphNode n : board.getAllGraphNodes()) {
             if(!n.getNodeValue().isEmpty()) {
-                score++;
+                weight++;
             }
         }
-        score = 100 - score;
-        return score;
+        weight = 100 - weight;
+        return weight;
     }
 
 
         
-    private static float mobilityHeuristic(Graph board) {
+    private static float outsideInfluenceWeight(Graph board) {
 
-        float score = 0;
-        for (GraphNode n : board.getAllGraphNodes()) {
-            if (n.getNodeValue().isEmpty()) {
-                continue;
-            }
-
-            int qDist = (n.getNodeValue() == Square.WHITE) ? n.getQueenDistanceWhite() : n.getQueenDistanceBlack();
-            int kDist = (n.getNodeValue() == Square.WHITE) ? n.getKingDistanceWhite() : n.getKingDistanceBlack();
-
-            score += Math.pow(qDist, 2) - Math.pow(kDist, 2);
+        float weight = 100;
+               
+        for(GraphNode n : board.getAllGraphNodes()){
+           if(!n.getNodeValue().isEmpty()) {
+               weight--;
+            
+           }
         }
-        return score;
+
+        weight = 100 - weight;
+
+        return ((((weight-30)/10)*((weight-30)/10))*(-1))+40;
     }
         
 
@@ -136,42 +127,31 @@ public class AmazonsDistanceHeuristic {
         //  * @param board The current board state
         //  * @return Returns a heursitic based on the number of empty squares with penalty on empty squares
         //  */
-        // private static float transistionHeuristic1(Graph board){
-
-        //     float score = 0;
+        private static float reachableSquareWeight (Graph board){
             
-        //     for(GraphNode n : board.getAllGraphNodes()){
-        //         if(!n.getNodeValue().isEmpty()) {
-        //             score++;
-                
-        //         }
-        //     }
-            
-        //     score = ((score-60)/10);
-        //     score *= score; 
-        //     score *= (-1);
-        //     score += 40; 
-        //     return score;
-    
-            
-        // }
-
-
-        /***
-         * Calculates a heuristic that is crucial for the beginning of the game.
-         * @param board The current board state
-         * @return Returns a heursitic based on the number of empty squares with penalty on empty squares
-         */
-        private static float gameStartHeuristic (Graph board){
-            
-            float score = 0; 
+            float weight = 100;
+               
             for(GraphNode n : board.getAllGraphNodes()){
-            if(!n.getNodeValue().isEmpty()) {
-                score++;
+               if(!n.getNodeValue().isEmpty()) {
+                   weight--;
+                
+               }
             }
-            }
-                return score;
 
+            weight = 100 - weight;
+
+            return ((((weight-60)/10)*((weight-30)/10))*(-1))+40;
+
+        }
+
+        private static float mobilityWeight (Graph board){
+              
+            float w = 100; 
+            for(GraphNode n : board.getAllGraphNodes()){
+               if(!n.getNodeValue().isEmpty()) w--;
+            }
+                return (100 - w);
+    
         }
 
         /***
@@ -179,7 +159,7 @@ public class AmazonsDistanceHeuristic {
          * @param board The current board state
          * @return Returns a heursitic based on the difference between queen distance values and king distance values.
          */
-        private static float clusteringHeuristic(Graph board) {
+        private static float clusteringWeight(Graph board) {
             float score = 0;
         
             for (GraphNode node : board.getAllGraphNodes()) {
