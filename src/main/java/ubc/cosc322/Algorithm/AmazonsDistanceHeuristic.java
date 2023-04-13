@@ -9,7 +9,11 @@ public class AmazonsDistanceHeuristic {
 
     public class Heuristic {
 
-
+        /***
+         * @param board The current board state
+         * @param player The current player's square on the board
+         * @return Computes and returns the overall heuristic
+         */
         public static float calculateHeuristicValue(Graph board, Square player){
         
 
@@ -52,6 +56,12 @@ public class AmazonsDistanceHeuristic {
             return (float) (heuristic1 + heuristic2 + heuristic4 + heuristic3 + heuristic5);
         }
 
+        /***
+         * @param player The current player's square on the board
+         * @param dist1 Queen or King ditance for the current square
+         * @param dist2 Corresponding distane to dist1
+         * @return Computes and returns a heuristic that represents number of controlled squares between two players or the number of legal moves available
+         */
         private static float Ti_value(Square player, int dist1, int dist2){
             float k = 1/5f;
     
@@ -66,6 +76,11 @@ public class AmazonsDistanceHeuristic {
             else 
                 return dist1 < dist2 ? 1 : -1;
         }
+
+        /***
+         * @param board The current state of the board
+         * @return Computes and returns a heuristic that represents the influence a player's Amazons have on the empty squares
+         */
         private static float C1_value(Graph board){
             float sum = 0;
             for (GraphNode n : board.getAllGraphNodes()) {
@@ -76,6 +91,10 @@ public class AmazonsDistanceHeuristic {
             return 2 * sum;
         }
 
+        /***
+         * @param board The current state of the board
+         * @return Computes and returns a heuristic that represents the difference in the number of reachable squares between the two players
+         */
         private static float C2_value(Graph board){
             float sum = 0;
             for (GraphNode n : board.getAllGraphNodes()) {
@@ -87,46 +106,46 @@ public class AmazonsDistanceHeuristic {
 
 
         /***
-         * 
          * @param board The current board state
-         * @return Returns a heursitic based on the number of empty nodes
+         * @return Returns a heursitic weight for t1 based on the number of empty nodes in board 
          */
         private static float territoryWeight(Graph board){
 
-        float weight = 0;                             //calculates the number of filled tiles
-        for(GraphNode n : board.getAllGraphNodes()) {
-            if(!n.getNodeValue().isEmpty()) {
-                weight++;
+            float weight = 0;                             //calculates the number of filled tiles
+            for(GraphNode n : board.getAllGraphNodes()) {
+                if(!n.getNodeValue().isEmpty()) {
+                    weight++;
+                }
             }
+            weight = 100 - weight;
+            return weight;
         }
-        weight = 100 - weight;
-        return weight;
-    }
+  
+        /***
+         * @param board The current board state
+         * @return Returns a heursitic weight for c1 based on the number of empty nodes in the board and giving them a desired weight
+         */
+        private static float outsideInfluenceWeight(Graph board) {
 
+            float weight = 100;
+                
+            for(GraphNode n : board.getAllGraphNodes()){
+                if(!n.getNodeValue().isEmpty()) {
+                    weight--;
+                
+                }   
+            }
 
-        
-    private static float outsideInfluenceWeight(Graph board) {
+            weight = 100 - weight;
 
-        float weight = 100;
-               
-        for(GraphNode n : board.getAllGraphNodes()){
-           if(!n.getNodeValue().isEmpty()) {
-               weight--;
-            
-           }
+            return ((((weight-30)/10)*((weight-30)/10))*(-1))+40;
         }
-
-        weight = 100 - weight;
-
-        return ((((weight-30)/10)*((weight-30)/10))*(-1))+40;
-    }
         
 
-        // /***
-        //  * Returns a heuristic that supports transition from the earlier to the later stages of the game
-        //  * @param board The current board state
-        //  * @return Returns a heursitic based on the number of empty squares with penalty on empty squares
-        //  */
+        /***
+         * @param board The current board state
+         * @return Returns a heursitic weight weight for c2 based on the number of empty nodes in the board and giving them a desired weight
+         */
         private static float reachableSquareWeight (Graph board){
             
             float weight = 100;
@@ -144,6 +163,10 @@ public class AmazonsDistanceHeuristic {
 
         }
 
+        /***
+         * @param board The current board state
+         * @return Returns a heursitic weight weight for t2 based on the number of empty nodes in the board and giving them a desired weight that is inversed compared to territoryWeight(Graph board)
+         */
         private static float mobilityWeight (Graph board){
               
             float w = 100; 
@@ -155,9 +178,9 @@ public class AmazonsDistanceHeuristic {
         }
 
         /***
-         * Calculates a heuristic that is penalizes clustering of pieces
+         * Calculates a heuristic weight that penalizes clustering of pieces
          * @param board The current board state
-         * @return Returns a heursitic based on the difference between queen distance values and king distance values.
+         * @return Returns a heursitic weight for t2 based on the difference between queen distance values and king distance values.
          */
         private static float clusteringWeight(Graph board) {
             float score = 0;
@@ -180,9 +203,9 @@ public class AmazonsDistanceHeuristic {
         }
 
         /***
-         * Calculates a heuristic that is favors attacking potential of pieces
+         * Calculates a heuristic weight that favors attacking potential of pieces
          * @param board The current board state
-         * @return Returns a heursitic based on the difference between queen and king distance values.
+         * @return Returns a heursitic weight for t1 based on the difference between queen and king distance values.
          */
         private static float attackingPotentialHeuristic(Graph board) {
             float score = 0;
@@ -205,9 +228,9 @@ public class AmazonsDistanceHeuristic {
         }
 
         /***
-         * Calculates a heuristic that favors attacking potential with respect to mobility of pieces
+         * Calculates a heuristic weight that favors attacking potential with respect to mobility of pieces
          * @param board The current board state
-         * @return Returns a heursitic based on the queen and king distance values.
+         * @return Returns a heursitic weight for t1 based on only queen distance values.
          */
         private static float attackingPotential1Heuristic(Graph board) {
             float score = 0;
@@ -231,8 +254,15 @@ public class AmazonsDistanceHeuristic {
 
     public static class GraphDistanceCalculator {
 
+    	/**
+
+    	Calculates the distances between a given player node and all the other nodes in a graph.
+    	Uses a Breadth First Search algorithm to explore the graph and set the distances.
+    	@param graph The graph containing all the nodes to explore.
+    	@param playerNode The node representing the player.
+    	*/
         public static void calculatePlayerDistances(Graph graph, Square playerNode){
-    
+        	// Create a set of unvisited nodes and a list of nodes to search, initialize the queen's distance to 1.
             Set<GraphNode> unvisitedNodes = new HashSet<>();
             List<DistanceNode> nodeSearch = new LinkedList<>();
             List<GraphNode> allNodes = graph.getAllGraphNodes();
@@ -241,16 +271,16 @@ public class AmazonsDistanceHeuristic {
             for (int i = 0; i < allNodes.size(); i++) {
                 GraphNode node = allNodes.get(i);
                 Square tile = node.getNodeValue();
-                
+             // If the tile is an arrow, skip it.
                 if (tile.isArrow()) {
                     continue;
                 }
-               
+             // If the tile is not the player, add it to the set of unvisited nodes.
                 if (!tile.isPlayer()) 
                 {
                     unvisitedNodes.add(node);
                 }
-             
+             // If the node is the player node, set its distance to zero and add it to the node search list.
                 if (node.getNodeValue() == playerNode) {
                     node.setPlayerDistancesZero(node.getNodeValue());
                     GraphDistanceCalculator.DistanceNode distanceNode = new DistanceNode(node, node.getNodeValue());
@@ -258,11 +288,11 @@ public class AmazonsDistanceHeuristic {
                 }
     
             }
-    
+         // Continue to explore the graph until all nodes have been visited.
             while (!unvisitedNodes.isEmpty()) {
                 nodeSearch = exploreAndSetDistances(nodeSearch, unvisitedNodes, queenDistance);
                 queenDistance++;
-    
+             // If there are no more nodes to search, exit the loop.
                 if (nodeSearch.isEmpty()) {
                     break;
                 }
@@ -270,7 +300,14 @@ public class AmazonsDistanceHeuristic {
         }
     
     
-        
+        /**
+
+        Explores and sets the distances between the initial nodes and their neighbors in the graph.
+        @param initialNodes list of distance nodes from which to start exploring
+        @param unvisitedNodes set of nodes in the graph that have not yet been visited
+        @param queenDistance the queen distance
+        @return a list of new distance nodes that were visited in the graph during the exploration
+        */
         private static List<DistanceNode> exploreAndSetDistances(List<DistanceNode> initiaNodes,  Set<GraphNode> unvisitedNodes, int queenDistance){
     
             List<DistanceNode> newVistedNodes = new LinkedList<>();
@@ -281,16 +318,17 @@ public class AmazonsDistanceHeuristic {
                 unvisitedNodes.remove(initNode);
     
                 for (int j = 0; j < GraphEdge.Direction.getAllDirections().length; j++) {
-    
+                	// get the current edge from the initial node in the current direction
                     GraphEdge currEdge = initNode.getExistingEdge(GraphEdge.Direction.getAllDirections()[j]);
     
                     int kingDistance = 1;
-                   
+                    // set distances for all nodes in the current edge
                     while(currEdge!=null){
 
                         GraphNode currNode = currEdge.getTargetNode();
                         
                         if(initiaNodes.get(i).currentPlayer().isWhite()){
+                        	//If player is white, get the king distance of the white piece
                             kingDistance = initNode.getKingDistanceWhite();
                             if(currNode.getQueenDistanceWhite() > queenDistance) {
                                 currNode.setQueenDistanceWhite(queenDistance);
@@ -303,6 +341,7 @@ public class AmazonsDistanceHeuristic {
                         
                         else if(initiaNodes.get(i).currentPlayer().isBlack())
                         {
+                        	 //If the player is black, get the king distance of the black piece
                             kingDistance = initNode.getKingDistanceBlack();
                             if(currNode.getQueenDistanceBlack() > queenDistance){
                                  currNode.setQueenDistanceBlack(queenDistance);
@@ -314,10 +353,11 @@ public class AmazonsDistanceHeuristic {
                         }
     
                         if (unvisitedNodes.remove(currNode)) {
+                        	 // create a new distance node for the current node and add it to the list of new visited nodes
                             DistanceNode distanceNode = new DistanceNode(currNode, initiaNodes.get(i).currentPlayer);
                             newVistedNodes.add(distanceNode);
                         }
-    
+                     // get the next edge in the current direction from the current node
                         currEdge = currNode.getExistingEdge(GraphEdge.Direction.getAllDirections()[j]);
                     }
     
