@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 public class AmazonsGameManager{
 
-	private static final int THRESHOLD = 200000;	//ME: try different values
+	private static final int THRESHOLD = 200000;	//Threshold for the number of nodes to be expanded by the minimax algorithm.
 	private static final int DIM = 10;
 	private static final int[][] BOARD_STATE_BEGINNING = {
 

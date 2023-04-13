@@ -1,7 +1,6 @@
 package ubc.cosc322.Graph;
 
 import ubc.cosc322.AmazonsGameManager.Square;
-import ubc.cosc322.Algorithm.*;
 import ubc.cosc322.Algorithm.AmazonsDistanceHeuristic.GraphDistanceCalculator;
 
 import java.util.ArrayList;
@@ -13,6 +12,30 @@ public class Graph {
     private List<GraphNode> nodeList;
     private int h;
     private int w;
+
+    
+     /**
+    Constructor for the Graph class.
+    @param gameBoard a 2D integer array representing the game board
+    @param dim an array of integers representing the width and height of the graph (only used if gameBoard is null)
+    */
+    public Graph(int[][] gameBoard, int ...dim) {
+    	//If gameBoard is null, creates an empty graph with width and height specified in dim.
+        if(gameBoard == null){
+            w = dim[0];
+            h = dim[1];
+            nodeList = new ArrayList<>();
+            return;
+        }
+        //If gameBoard is not null, initializes the graph with the provided gameBoard array.
+        else{
+            w = gameBoard[0].length;
+            h = gameBoard.length;
+            nodeList = new ArrayList<>(w * h);
+            initializeGraph(gameBoard);
+        }
+       
+    }
 
     
     /**
@@ -37,30 +60,7 @@ public class Graph {
         return clone;
     }
 
-    /**
-    Constructor for the Graph class.
-    @param gameBoard a 2D integer array representing the game board
-    @param dim an array of integers representing the width and height of the graph (only used if gameBoard is null)
-    */
-    public Graph(int[][] gameBoard, int ...dim) {
-    	//If gameBoard is null, creates an empty graph with width and height specified in dim.
-        if(gameBoard == null){
-            w = dim[0];
-            h = dim[1];
-            nodeList = new ArrayList<>();
-            return;
-        }
-        //If gameBoard is not null, initializes the graph with the provided gameBoard array.
-        else{
-            w = gameBoard[0].length;
-            h = gameBoard.length;
-            nodeList = new ArrayList<>(w * h);
-            initializeGraph(gameBoard);
-        }
-       
-    }
-
-    
+   
     
     public List<GraphNode> getAllGraphNodes(){
         return nodeList;
