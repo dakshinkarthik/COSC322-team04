@@ -12,11 +12,11 @@
     },
     {
       "type": "java",
-      "name": "AIBot",
+      "name": "RosieBot",
       "request": "launch",
-      "mainClass": "ubc.cosc322.AIBot",
+      "mainClass": "ubc.cosc322.RosieBot",
       "projectName": "team-00",
-      "args": ["sanjana1", "cosc322"]
+      "args": ["sanjana", "cosc322"]
     }
   ]
 }
