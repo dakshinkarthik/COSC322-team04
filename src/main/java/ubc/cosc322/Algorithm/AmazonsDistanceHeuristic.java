@@ -138,7 +138,7 @@ public class AmazonsDistanceHeuristic {
 
             weight = 100 - weight;
 
-            return ((((weight-30)/10)*((weight-30)/10))*(-1))+40;
+            return ((((weight-40)/10)*((weight-40)/10))*(-1))+30;
         }
         
 
@@ -159,7 +159,7 @@ public class AmazonsDistanceHeuristic {
 
             weight = 100 - weight;
 
-            return ((((weight-60)/10)*((weight-30)/10))*(-1))+40;
+            return ((((weight-60)/10)*((weight-30)/10))*(-1))+30;
 
         }
 
